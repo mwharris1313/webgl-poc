@@ -1,6 +1,7 @@
 <html>
 
 <head>
+
 <style>
 canvas {
     padding-left: 0;
@@ -11,11 +12,33 @@ canvas {
     background-color: rgba(0,0,0,1);
 }
 </style>
+
+<script src="webgl-utils.js"></script>
 <script src="main.js"></script>
+
+<!-- =========================================================== -->
+<script id="2d-vertex-shader" type="x-shader/x-vertex">
+attribute vec2 a_position;
+void main() {
+  gl_Position = vec4(a_position, 0, 1);
+}
+</script>
+
+<!-- =========================================================== -->
+<script id="2d-fragment-shader" type="x-shader/x-fragment">
+void main() {
+  gl_FragColor = vec4(0,0,1,1);  // green
+}
+</script>
+
+<!-- =========================================================== -->
+
+
 </head>
 
 <body onload="main();">
 <canvas id="glCanvas"></canvas>
+
 </body>
 
 </html>

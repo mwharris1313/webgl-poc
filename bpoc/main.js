@@ -13,9 +13,7 @@ function main(){
 	canvas.addEventListener("webglcontextcreationerror", onContextCreationError, false);
 
 	var gl = canvas.getContext("experimental-webgl");
-	if(!gl) {
-		alert("A WebGL context could not be created.\nReason: " + errorInfo);
-	}
+	if(!gl) alert("A WebGL context could not be created.\nReason: " + errorInfo);
 
 	canvas.width = 640;
 	canvas.height = 360;
@@ -24,13 +22,13 @@ function main(){
 	// =======================================================================
 	// setup a GLSL program
 
-	var vertexShader = createShaderFromScriptElement(gl, "2d-vertex-shader");
-	var fragmentShader = createShaderFromScriptElement(gl, "2d-fragment-shader");
+	var vertexShader = createShaderEmbedded(gl, "VertexShader");
+	var fragmentShader = createShaderEmbedded(gl, "FragmentShader");
 	var program = createProgram(gl, [vertexShader, fragmentShader]);
 	gl.useProgram(program);
 
 	// look up where the vertex data needs to go.
-	var positionLocation = gl.getAttribLocation(program, "a_position");
+	var positionLocation = gl.getAttribLocation(program, "position");
 
 	// Create a buffer and put a single clipspace rectangle in it (2 triangles)
 	var buffer = gl.createBuffer();
@@ -43,12 +41,13 @@ function main(){
 			-1.0,  1.0, 
 			-1.0,  1.0, 
 			 1.0, -1.0, 
-			 1.0,  1.0]), 
-		gl.STATIC_DRAW);
+			 1.0,  1.0
+		]),
+		gl.STATIC_DRAW
+	);
 	gl.enableVertexAttribArray(positionLocation);
 	gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-	// draw
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 	// =======================================================================

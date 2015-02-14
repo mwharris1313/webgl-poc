@@ -1,42 +1,66 @@
 "use strict";
-
 var log = console.log.bind(console);
+var g, gl, program;
 
+g = {
+	surface: {width:640, height:360}
+};
+
+var image;
+// =================================================================
 window.onload = function(){
-	var image = new Image();
+
+	init();
+
+	image = new Image();
 	image.src = "kitty.jpg";
 	image.onload = function() {
-	render(image);
+		window.requestAnimationFrame(render);
+		//startDrawing(img);
 	}
 }
 
-function render(image) {
+
+// =================================================================
+function init(){
 
 	var canvas = document.getElementById('glCanvas');
 
-	var errorInfo = "";
+	var errorStatus = "";
 	function onContextCreationError(event) {
 		canvas.removeEventListener("webglcontextcreationerror", onContextCreationError, false);
-		errorInfo = e.statusMessage || "Unknown";
+		errorStatus = e.statusMessage || "Unknown";
 	}
 	canvas.addEventListener("webglcontextcreationerror", onContextCreationError, false);
 
-	var gl = canvas.getContext("experimental-webgl");
-	if(!gl) alert("ERROR: WebGL Context Not Created : " + errorInfo);
+	gl = canvas.getContext("experimental-webgl");
+	if(!gl) alert("ERROR: WebGL Context Not Created : " + errorStatus);
 
-	canvas.width = 640;
-	canvas.height = 360;
+	canvas.width = g.surface.width;
+	canvas.height = g.surface.height;
 	gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
 	var vertexShader = createShaderEmbedded(gl, "VertexShader");
 	var fragmentShader = createShaderEmbedded(gl, "FragmentShader");
-	var program = createProgram(gl, [vertexShader, fragmentShader]);
+	program = createProgram(gl, [vertexShader, fragmentShader]);
 	gl.useProgram(program);
 
-	// -------------------------------------------------------------------- From Tutorial Example for further study
+}
+
+
+// =================================================================
+function render() {
+	requestAnimationFrame(render);
+
 	// look up where the vertex data needs to go.
-	var positionLocation = gl.getAttribLocation(program, "a_position");
-	var texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
+	var positionLocation = gl.getAttribLocation(program, "aPosition");
+	var texCoordLocation = gl.getAttribLocation(program, "aTexCoord");
+
+	// lookup uniforms
+	var resolutionLocation = gl.getUniformLocation(program, "uResolution");
+
+	// set the resolution
+	gl.uniform2f(resolutionLocation, g.surface.width, g.surface.height);
 
 	// provide texture coordinates for the rectangle.
 	var texCoordBuffer = gl.createBuffer();
@@ -69,11 +93,6 @@ function render(image) {
 	// Upload the image into the texture.
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
 
-	// lookup uniforms
-	var resolutionLocation = gl.getUniformLocation(program, "u_resolution");
-
-	// set the resolution
-	gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
 
 	// Create a buffer for the position of the rectangle corners.
 	var buffer = gl.createBuffer();
@@ -81,8 +100,8 @@ function render(image) {
 	gl.enableVertexAttribArray(positionLocation);
 	gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-	// Set a rectangle the same size as the image.
-	var setRectangle = function(gl, x, y, width, height){
+	// Set a rectangle 
+	var setImage = function(x, y, width, height){
 		var x1 = x;
 		var x2 = x + width;
 		var y1 = y;
@@ -100,10 +119,24 @@ function render(image) {
 			gl.STATIC_DRAW
 		);
 	}
-	setRectangle(gl, 0, 0, image.width, image.height);
 
-	// Draw the rectangle.
-	gl.drawArrays(gl.TRIANGLES, 0, 6);
-	// --------------------------------------------------------------------
+	// -----------------------------------------------------------------
+	// trying to draw scaled image multiple times on gl canvas
+
+	var width = image.width / 8;
+	var height = image.height / 8;
+	for (var x=0; x<12*width; x+=width){
+		for (var y=0; y<9*height; y+=height){
+			if (Math.floor(Math.random()*2) === 1) {
+				setImage(x, y, width, height);
+				gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+			}
+		}
+	}
+
+	// -----------------------------------------------------------------
 
 }
+
+// =================================================================

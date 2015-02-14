@@ -1,9 +1,9 @@
 "use strict";
-
+// =================================================================
 var createShaderEmbedded = function(gl, id) {
 
 	var tag = document.getElementById(id);
-	if (!tag) throw("ERROR: Unknown Tag ID : " + id);
+	if (!tag) throw("ERROR: Unknown Script Tag ID : " + id);
 
 	var shaderType = {"Vertex-Shader":gl.VERTEX_SHADER, "Fragment-Shader":gl.FRAGMENT_SHADER}
 	var type = shaderType[tag.type];
@@ -28,9 +28,9 @@ var createShaderEmbedded = function(gl, id) {
 	}
 
 	return getShader(src, type);
-
 };
 
+// =================================================================
 var createProgram = function(gl, shaders, attribs, locations) {
 
 	var program = gl.createProgram();
@@ -54,3 +54,5 @@ var createProgram = function(gl, shaders, attribs, locations) {
 
 	return program;
 };
+
+// =================================================================

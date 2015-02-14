@@ -122,6 +122,7 @@ function render() {
 
 	// -----------------------------------------------------------------
 	// trying to draw scaled image multiple times on gl canvas
+	// some tiles randomly show or hide.
 
 	var width = image.width / 8;
 	var height = image.height / 8;

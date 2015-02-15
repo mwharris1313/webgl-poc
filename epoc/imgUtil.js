@@ -10,15 +10,13 @@ function loadImages(urls, callback) {
 	var images = [];
 	var imagesToLoad = urls.length;
  
-	// Called each time an image finished loading.
 	var onImageLoad = function() {
 		imagesToLoad--;
-		// If all the images are loaded call the callback.
-		if (imagesToLoad == 0) callback(images);
+		if (imagesToLoad == 0) callback(images); // all images loaded
 	};
  
-	for (var ii = 0; ii < imagesToLoad; ++ii) {
-		var image = loadImage(urls[ii], onImageLoad);
+	for (var i = 0; i < imagesToLoad; i++) {
+		var image = loadImage(urls[i], onImageLoad);
 		images.push(image);
 	}
 }

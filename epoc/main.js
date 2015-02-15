@@ -6,22 +6,35 @@ g = {
 	surface: {width:640, height:360}
 };
 
-var image;
-var posX = 0;
-var posY = 0;
+var imageNames = ["image1.png", "image2.png"];
+var images = [];
 // =================================================================
 window.onload = function(){
 
+	var images = [];
+	loadImages(imageNames, images);
 	init();
 
-	image = new Image();
-	image.src = "image.png";
-	image.onload = function() {
-		window.requestAnimationFrame(render);
-		//startDrawing(img);
-	}
 }
+// =================================================================
+function loadImages(fileNames){
 
+	for (var i=0; i<fileNames.length; i++){
+
+		var image = new Image();
+		image.src = fileNames[i];
+		image.onload = function() {
+			images.push(image);
+			if (fileNames.length === images.length) onLoadImages();
+		}
+	}
+
+}	
+
+// =================================================================
+function onLoadImages(){
+	window.requestAnimationFrame(render);
+}
 
 // =================================================================
 function init(){
@@ -93,7 +106,7 @@ function render() {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
 	// Upload the image into the texture.
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[0]);
 
 
 	// Create a buffer for the position of the rectangle corners.
@@ -125,7 +138,7 @@ function render() {
 	// -----------------------------------------------------------------
 	// trying to draw scaled image on gl canvas
 
-	setImage(20, 20, image.width, image.height);
+	setImage(20, 20, images[0].width, images[0].height);
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 	// -----------------------------------------------------------------

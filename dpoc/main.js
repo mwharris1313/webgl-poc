@@ -15,7 +15,7 @@ window.onload = function(){
 	init();
 
 	image = new Image();
-	image.src = "kitty.jpg";
+	image.src = "image.png";
 	image.onload = function() {
 		window.requestAnimationFrame(render);
 		//startDrawing(img);
@@ -129,10 +129,10 @@ function render() {
 	posX += Math.floor(Math.random()*2) === 0 ? -2: 2;
 	posY += Math.floor(Math.random()*2) === 0 ? -2: 2;
 
-	var width = image.width / 8;
-	var height = image.height / 8;
-	for (var x=0; x<12*width; x+=width){
-		for (var y=0; y<9*height; y+=height){
+	var width = image.width;
+	var height = image.height;
+	for (var x=0; x<14*width; x+=width){
+		for (var y=0; y<8*height; y+=height){
 			if (Math.floor(Math.random()*2) === 1) {
 				setImage(x+posX, y+posY, width, height);
 				gl.drawArrays(gl.TRIANGLES, 0, 6);

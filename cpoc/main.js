@@ -15,7 +15,7 @@ window.onload = function(){
 	init();
 
 	image = new Image();
-	image.src = "kitty.jpg";
+	image.src = "image.png";
 	image.onload = function() {
 		window.requestAnimationFrame(render);
 		//startDrawing(img);

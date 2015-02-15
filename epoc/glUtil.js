@@ -56,3 +56,32 @@ var createProgram = function(gl, shaders, attribs, locations) {
 };
 
 // =================================================================
+var getContext = function(id, width, height){
+	var canvas = document.getElementById(id);
+
+	var errorStatus = "";
+	function onContextCreationError(event) {
+		canvas.removeEventListener("webglcontextcreationerror", onContextCreationError, false);
+		errorStatus = e.statusMessage || "Unknown";
+	}
+	canvas.addEventListener("webglcontextcreationerror", onContextCreationError, false);
+
+	gl = canvas.getContext("experimental-webgl");
+	if(!gl) alert("ERROR: WebGL Context Not Created : " + errorStatus);
+
+	canvas.width = width;
+	canvas.height = height;
+	gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+
+	return gl;
+}
+
+var getProgram = function(gl){
+
+	var vertexShader = createShaderEmbedded(gl, "VertexShader");
+	var fragmentShader = createShaderEmbedded(gl, "FragmentShader");
+	var program = createProgram(gl, [vertexShader, fragmentShader]);
+	gl.useProgram(program);	
+
+	return program;
+}

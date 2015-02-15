@@ -1,148 +1,113 @@
 "use strict";
 var log = console.log.bind(console);
+//var g, gl, program;
 var g, gl, program;
 
 g = {
-	surface: {width:640, height:360}
+	surface: {width:640, height:360},
+	isOddFrame: false
 };
 
-var imageNames = ["image1.png", "image2.png"];
-var images = [];
 // =================================================================
 window.onload = function(){
 
-	var images = [];
-	loadImages(imageNames, images);
-	init();
+	gl = getContext("glCanvas", 640, 360);
+	program = getProgram(gl);
 
-}
-// =================================================================
-function loadImages(fileNames){
-
-	for (var i=0; i<fileNames.length; i++){
-
-		var image = new Image();
-		image.src = fileNames[i];
-		image.onload = function() {
-			images.push(image);
-			if (fileNames.length === images.length) onLoadImages();
-		}
-	}
-
-}	
-
-// =================================================================
-function onLoadImages(){
-	window.requestAnimationFrame(render);
+	loadImages(["image1.png", "image2.png"], render);
 }
 
 // =================================================================
-function init(){
-
-	var canvas = document.getElementById('glCanvas');
-
-	var errorStatus = "";
-	function onContextCreationError(event) {
-		canvas.removeEventListener("webglcontextcreationerror", onContextCreationError, false);
-		errorStatus = e.statusMessage || "Unknown";
-	}
-	canvas.addEventListener("webglcontextcreationerror", onContextCreationError, false);
-
-	gl = canvas.getContext("experimental-webgl");
-	if(!gl) alert("ERROR: WebGL Context Not Created : " + errorStatus);
-
-	canvas.width = g.surface.width;
-	canvas.height = g.surface.height;
-	gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-
-	var vertexShader = createShaderEmbedded(gl, "VertexShader");
-	var fragmentShader = createShaderEmbedded(gl, "FragmentShader");
-	program = createProgram(gl, [vertexShader, fragmentShader]);
-	gl.useProgram(program);
-
-}
-
-
-// =================================================================
-function render() {
-	requestAnimationFrame(render);
+function render(images) {
 
 	// look up where the vertex data needs to go.
-	var positionLocation = gl.getAttribLocation(program, "aPosition");
-	var texCoordLocation = gl.getAttribLocation(program, "aTexCoord");
-
-	// lookup uniforms
-	var resolutionLocation = gl.getUniformLocation(program, "uResolution");
-
-	// set the resolution
-	gl.uniform2f(resolutionLocation, g.surface.width, g.surface.height);
+	var positionLocation = gl.getAttribLocation(program, "a_position");
+	var texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
 
 	// provide texture coordinates for the rectangle.
 	var texCoordBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
-	gl.bufferData(
-		gl.ARRAY_BUFFER,
-		new Float32Array([
-			0.0, 0.0,
-			1.0, 0.0,
-			0.0, 1.0,
-			0.0, 1.0,
-			1.0, 0.0,
-			1.0, 1.0]),
-		gl.STATIC_DRAW
-	);
-
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+		0.0,  0.0,
+		1.0,  0.0,
+		0.0,  1.0,
+		0.0,  1.0,
+		1.0,  0.0,
+		1.0,  1.0]), gl.STATIC_DRAW);
 	gl.enableVertexAttribArray(texCoordLocation);
 	gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
-	// Create a texture.
-	var texture = gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, texture);
+	  // create 2 textures
+	var textures = [];
+	for (var ii = 0; ii < 2; ++ii) {
+		var texture = gl.createTexture();
+		gl.bindTexture(gl.TEXTURE_2D, texture);
 
-	// Set the parameters so we can render any size image.
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		// Set the parameters so we can render any size image.
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-	// Upload the image into the texture.
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[0]);
+		// Upload the image into the texture.
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[ii]);
 
+		// add the texture to the array of textures.
+		textures.push(texture);
+	}
+
+	// lookup uniforms
+	var resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+
+	// lookup the sampler locations.
+	var u_image0Location = gl.getUniformLocation(program, "u_image0");
+	var u_image1Location = gl.getUniformLocation(program, "u_image1");
+
+	// set the resolution
+	gl.uniform2f(resolutionLocation, g.surface.width, g.surface.height);
+
+	// set which texture units to render with.
+	gl.uniform1i(u_image0Location, 0);  // texture unit 0
+	gl.uniform1i(u_image1Location, 1);  // texture unit 1
+
+	// Set each texture unit to use a particular texture.
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, textures[0]);
+	gl.activeTexture(gl.TEXTURE1);
+	gl.bindTexture(gl.TEXTURE_2D, textures[1]);
 
 	// Create a buffer for the position of the rectangle corners.
-	var buffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+	var positionBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 	gl.enableVertexAttribArray(positionLocation);
 	gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
-	// Set an image's position and dimensions. 
-	var setImage = function(x, y, width, height){
-		var x1 = x;
-		var x2 = x + width;
-		var y1 = y;
-		var y2 = y + height;
-		gl.bufferData(
-			gl.ARRAY_BUFFER,
-			new Float32Array([
-				x1, y1,
-				x2, y1,
-				x1, y2,
-				x1, y2,
-				x2, y1,
-				x2, y2
-			]),
-			gl.STATIC_DRAW
-		);
-	}
+	// Set a rectangle the same size as the images.
+	setRectangle(gl, 0, 0, images[0].width, images[1].height);
 
-	// -----------------------------------------------------------------
-	// trying to draw scaled image on gl canvas
-
-	setImage(20, 20, images[0].width, images[0].height);
+	// Draw the rectangle.
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-	// -----------------------------------------------------------------
-
 }
+
+function randomInt(range) {
+	return Math.floor(Math.random() * range);
+}
+
+function setRectangle(gl, x, y, width, height) {
+	var x1 = x;
+	var x2 = x + width;
+	var y1 = y;
+	var y2 = y + height;
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+		x1, y1,
+		x2, y1,
+		x1, y2,
+		x1, y2,
+		x2, y1,
+		x2, y2
+	]), gl.STATIC_DRAW);
+}
+
 
 // =================================================================

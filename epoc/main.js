@@ -19,6 +19,9 @@ window.onload = function(){
 
 // =================================================================
 function render(images) {
+	var renderWrapper = function(){render(images);};
+	requestAnimationFrame(renderWrapper);
+	//console.log("test");
 
 	// look up where the vertex data needs to go.
 	var positionLocation = gl.getAttribLocation(program, "a_position");
@@ -28,12 +31,19 @@ function render(images) {
 	var texCoordBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+		// 0.0,  0.0,
+		// 1.0,  0.0,
+		// 0.0,  1.0,
+		// 0.0,  1.0,
+		// 1.0,  0.0,
+		// 1.0,  1.0
 		0.0,  0.0,
-		1.0,  0.0,
-		0.0,  1.0,
-		0.0,  1.0,
-		1.0,  0.0,
-		1.0,  1.0]), gl.STATIC_DRAW);
+		0.5,  0.0,
+		0.0,  0.5,
+		0.0,  0.5,
+		0.5,  0.0,
+		0.5,  0.5
+	]), gl.STATIC_DRAW);
 	gl.enableVertexAttribArray(texCoordLocation);
 	gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
@@ -73,6 +83,9 @@ function render(images) {
 	// Set each texture unit to use a particular texture.
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, textures[0]);
+
+
+
 	gl.activeTexture(gl.TEXTURE1);
 	gl.bindTexture(gl.TEXTURE_2D, textures[1]);
 
@@ -83,10 +96,10 @@ function render(images) {
 	gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
 	// Set a rectangle the same size as the images.
-	setRectangle(gl, 0, 0, images[0].width, images[1].height);
+	setRectangle(gl, 40, 0, images[0].width, images[0].height);
+	gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 	// Draw the rectangle.
-	gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 }
 

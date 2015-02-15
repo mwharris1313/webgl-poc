@@ -14,7 +14,7 @@ window.onload = function(){
 	gl = getContext("glCanvas", 640, 360);
 	program = getProgram(gl);
 
-	loadImages(["image1.png", "image2.png"], render);
+	loadImages(["atlas2048_32.png","atlas2048_32.png"], render);
 }
 
 // =================================================================
@@ -30,6 +30,8 @@ function render(images) {
 	// provide texture coordinates for the rectangle.
 	var texCoordBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+
+	var n = 1.0/64.0; // 2048/64 = 32
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
 		// 0.0,  0.0,
 		// 1.0,  0.0,
@@ -38,11 +40,11 @@ function render(images) {
 		// 1.0,  0.0,
 		// 1.0,  1.0
 		0.0,  0.0,
-		0.5,  0.0,
-		0.0,  0.5,
-		0.0,  0.5,
-		0.5,  0.0,
-		0.5,  0.5
+		n,  0.0,
+		0.0,  n,
+		0.0,  n,
+		n,  0.0,
+		n,  n
 	]), gl.STATIC_DRAW);
 	gl.enableVertexAttribArray(texCoordLocation);
 	gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
@@ -96,7 +98,8 @@ function render(images) {
 	gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
 	// Set a rectangle the same size as the images.
-	setRectangle(gl, 40, 0, images[0].width, images[0].height);
+	//setRectangle(gl, 0, 0, images[0].width, images[0].height);
+	setRectangle(gl, 0, 0, 32,32);
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 	// Draw the rectangle.

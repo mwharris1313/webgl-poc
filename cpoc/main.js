@@ -123,23 +123,10 @@ function render() {
 	}
 
 	// -----------------------------------------------------------------
-	// trying to draw scaled image multiple times on gl canvas
-	// some tiles randomly show or hide.
+	// trying to draw scaled image on gl canvas
 
-	posX += Math.floor(Math.random()*2) === 0 ? -2: 2;
-	posY += Math.floor(Math.random()*2) === 0 ? -2: 2;
-
-	var width = image.width / 8;
-	var height = image.height / 8;
-	for (var x=0; x<12*width; x+=width){
-		for (var y=0; y<9*height; y+=height){
-			if (Math.floor(Math.random()*2) === 1) {
-				setImage(x+posX, y+posY, width, height);
-				gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-			}
-		}
-	}
+	setImage(20, 20, image.width, image.height);
+	gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 	// -----------------------------------------------------------------
 

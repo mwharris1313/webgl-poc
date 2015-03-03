@@ -5,6 +5,8 @@ var g, gl, program;
 
 g = {
 	surface: {width:640, height:360},
+	tile: {width:32, height:32},
+	atlas: {width:2048, height:2048},
 	isOddFrame: false
 };
 
@@ -14,64 +16,55 @@ window.onload = function(){
 	gl = getContext("glCanvas", 640, 360);
 	program = getProgram(gl);
 
-	loadImages(["atlas2048_32.png","atlas2048_32.png"], render);
+	loadImages(["atlas2048_32.png","atlas2048_32.png"], render); // load as if there were a second image
 }
 
 // =================================================================
 function render(images) {
 	var renderWrapper = function(){render(images);};
 	requestAnimationFrame(renderWrapper);
-	//console.log("test");
 
-	// look up where the vertex data needs to go.
+	// find vertex data destination
 	var positionLocation = gl.getAttribLocation(program, "a_position");
 	var texCoordLocation = gl.getAttribLocation(program, "a_texCoord");
 
-	// provide texture coordinates for the rectangle.
+	// texture coordinates for the rectangle
 	var texCoordBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
 
-	var n = 1.0/64.0; // 2048/64 = 32
+	var xScale,yScale,xZoom,yZoom,x,y;
+	x = g.surface.width/g.atlas.width;
+	y = g.surface.height/g.atlas.height;
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-		// 0.0,  0.0,
-		// 1.0,  0.0,
-		// 0.0,  1.0,
-		// 0.0,  1.0,
-		// 1.0,  0.0,
-		// 1.0,  1.0
 		0.0,  0.0,
-		n,  0.0,
-		0.0,  n,
-		0.0,  n,
-		n,  0.0,
-		n,  n
+		x,    0.0,
+		0.0,  y,
+		0.0,  y,
+		x,    0.0,
+		x,    y
 	]), gl.STATIC_DRAW);
 	gl.enableVertexAttribArray(texCoordLocation);
 	gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
-	  // create 2 textures
 	var textures = [];
-	for (var ii = 0; ii < 2; ++ii) {
+	for (var i = 0; i < 1; ++i) { // create n textures
 		var texture = gl.createTexture();
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 
-		// Set the parameters so we can render any size image.
+		// set parameters to render any size image.
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-		// Upload the image into the texture.
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[ii]);
-
-		// add the texture to the array of textures.
-		textures.push(texture);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[i]); // Upload the image into the texture.
+		
+		textures.push(texture); // array of textures
 	}
 
-	// lookup uniforms
-	var resolutionLocation = gl.getUniformLocation(program, "u_resolution");
+	var resolutionLocation = gl.getUniformLocation(program, "u_resolution"); // lookup uniforms
 
-	// lookup the sampler locations.
+	// lookup sampler locations.
 	var u_image0Location = gl.getUniformLocation(program, "u_image0");
 	var u_image1Location = gl.getUniformLocation(program, "u_image1");
 
@@ -86,8 +79,6 @@ function render(images) {
 	gl.activeTexture(gl.TEXTURE0);
 	gl.bindTexture(gl.TEXTURE_2D, textures[0]);
 
-
-
 	gl.activeTexture(gl.TEXTURE1);
 	gl.bindTexture(gl.TEXTURE_2D, textures[1]);
 
@@ -99,7 +90,8 @@ function render(images) {
 
 	// Set a rectangle the same size as the images.
 	//setRectangle(gl, 0, 0, images[0].width, images[0].height);
-	setRectangle(gl, 0, 0, 32,32);
+	//setRectangle(gl, 0, 0, 32,32);
+	setRectangle(gl, 0, 0, g.surface.width,g.surface.height);
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 	// Draw the rectangle.
@@ -124,6 +116,5 @@ function setRectangle(gl, x, y, width, height) {
 		x2, y2
 	]), gl.STATIC_DRAW);
 }
-
 
 // =================================================================

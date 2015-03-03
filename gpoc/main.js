@@ -5,11 +5,9 @@ var g, gl, program;
 
 g = {
 	surface: {width:640, height:360},
-	tile: {width: 32, height: 32},
 	isOddFrame: false
 };
 
-var taCol = 1;
 // =================================================================
 window.onload = function(){
 
@@ -33,17 +31,27 @@ function render(images) {
 	var texCoordBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
 
-	taCol++;
-	//var thisTile = getTile(1,5);
-	var thisTile = getTile(1, taCol % 64);
-
-	gl.bufferData(gl.ARRAY_BUFFER, thisTile, gl.STATIC_DRAW);
+	var n = 1.0/64.0; // 2048/64 = 32
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+		// 0.0,  0.0,
+		// 1.0,  0.0,
+		// 0.0,  1.0,
+		// 0.0,  1.0,
+		// 1.0,  0.0,
+		// 1.0,  1.0
+		0.0,  0.0,
+		n,  0.0,
+		0.0,  n,
+		0.0,  n,
+		n,  0.0,
+		n,  n
+	]), gl.STATIC_DRAW);
 	gl.enableVertexAttribArray(texCoordLocation);
 	gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
 	  // create 2 textures
 	var textures = [];
-	for (var i = 0; i < 1; i++) {
+	for (var ii = 0; ii < 2; ++ii) {
 		var texture = gl.createTexture();
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -54,7 +62,7 @@ function render(images) {
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
 		// Upload the image into the texture.
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[i]);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, images[ii]);
 
 		// add the texture to the array of textures.
 		textures.push(texture);
@@ -91,24 +99,22 @@ function render(images) {
 
 	// Set a rectangle the same size as the images.
 	//setRectangle(gl, 0, 0, images[0].width, images[0].height);
-
-	setTile(2,4);
+	setRectangle(gl, 0, 0, 32,32);
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 	// Draw the rectangle.
+
 }
 
 function randomInt(range) {
 	return Math.floor(Math.random() * range);
 }
 
-// =================================================================
-// set tiles row,col position on drawing surface
-function setTile(row, col) {
-	var x1 = (col-1) * g.tile.width;
-	var x2 = (col-1) * g.tile.width + g.tile.width;
-	var y1 = (row-1) * g.tile.height;
-	var y2 = (row-1) * g.tile.height + g.tile.height;
+function setRectangle(gl, x, y, width, height) {
+	var x1 = x;
+	var x2 = x + width;
+	var y1 = y;
+	var y2 = y + height;
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
 		x1, y1,
 		x2, y1,
@@ -119,38 +125,5 @@ function setTile(row, col) {
 	]), gl.STATIC_DRAW);
 }
 
-
-// =================================================================
-// return specific tile in texture atlas
-var getTile = function(row, col){
-
-	var width = 1 / 64.0;
-	var height = 1 / 64.0;
-	var xoffset = (col-1) * width;
-	var yoffset = (row-1) * height;
-	var xn = xoffset + width;
-	var yn = yoffset + height;
-
-	var xOffset = 0;
-	var yOffset = 0;
-	var xTL	= xoffset;
-	var yTL	= yn;
-	var xTR	= xn;
-	var yTR	= yn;
-	var xBL	= xoffset;
-	var yBL	= yoffset;
-	var xBR	= xn;
-	var yBR	= yoffset;
-
-	return new Float32Array([
-		xBL, yBL,
-		xBR, yBR,
-		xTL, yTL,
-		xTL, yTL,
-		xBR, yBR,
-		xTR, yTR
-	]);
-
-}
 
 // =================================================================

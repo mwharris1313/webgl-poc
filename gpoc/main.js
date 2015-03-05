@@ -35,6 +35,9 @@ function render(images) {
 	var xScale,yScale,xZoom,yZoom,x,y;
 	x = g.surface.width/g.atlas.width;
 	y = g.surface.height/g.atlas.height;
+	//x = 1 / g.surface.width;
+	//y = 1 / g.surface.height;
+
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
 		0.0,  0.0,
 		x,    0.0,
@@ -63,6 +66,7 @@ function render(images) {
 	}
 
 	var resolutionLocation = gl.getUniformLocation(program, "u_resolution"); // lookup uniforms
+	//var resolutionLocation = gl.getUniformLocation(program, "u_resolution"); // lookup uniforms
 
 	// lookup sampler locations.
 	var u_image0Location = gl.getUniformLocation(program, "u_image0");

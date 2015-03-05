@@ -1,0 +1,59 @@
+<html>
+
+<head>
+
+<style>
+canvas {
+	padding-left: 0;
+	padding-right: 0;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+	background-color: rgba(0,0,0,1);
+}
+</style>
+
+<script src="../lib/glUtil.js"></script>
+<script src="main.js"></script>
+
+<!-- =========================================================== -->
+<script id="VertexShader" type="Vertex-Shader">
+attribute vec2 aPosition;
+attribute vec2 aTexCoord;
+
+uniform vec2 uResolution;
+varying vec2 vTexCoord;
+
+void main() {
+
+	vec2 zeroToOne = aPosition / uResolution;	// convert the rectangle from pixels to 0.0 to 1.0
+	vec2 zeroToTwo = zeroToOne * 2.0;			// convert from 0->1 to 0->2
+	vec2 clipSpace = zeroToTwo - 1.0;			// convert from 0->2 to -1->+1 (clipspace)
+	gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+
+	vTexCoord = aTexCoord; // pass the texCoord to the fragment shader The GPU will interpolate this value between points.
+}
+</script>
+
+<!-- =========================================================== -->
+<script id="FragmentShader" type="Fragment-Shader">
+precision mediump float;
+
+uniform sampler2D uImage;	// our texture
+varying vec2 vTexCoord;		// the texCoords passed in from the vertex shader.
+
+void main() {
+   gl_FragColor = texture2D(uImage, vTexCoord);
+}
+</script>
+
+<!-- =========================================================== -->
+
+
+</head>
+
+<body>
+<canvas id="glCanvas"></canvas>
+</body>
+
+</html>

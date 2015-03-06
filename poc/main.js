@@ -4,8 +4,8 @@ var g, gl, program;
 
 g = {
 	surface: {width:640, height:360},
-	tile: {width:32, height:32, rows:11, cols:20},
-	frame: {count:0}
+	tile: {width:32, height:32, rows:13, cols:21},
+	frame: {count:0, tLast:0, repeat:1}
 };
 
 var image;
@@ -22,8 +22,19 @@ window.onload = function(){
 		window.requestAnimationFrame(render);
 		//startDrawing(img);
 	}
+
 }
 
+// =================================================================
+var msPerFrame = function(){
+	if(g.frame.count % 60 === 0) {
+		var tTemp = window.performance.now();
+		var dt = tTemp - g.frame.tLast;
+		g.frame.tLast = tTemp;
+		log(dt/60, 'ms/frame');
+	}
+	g.frame.count++;
+}
 
 // =================================================================
 function init(){
@@ -49,13 +60,17 @@ function init(){
 	program = createProgram(gl, [vertexShader, fragmentShader]);
 	gl.useProgram(program);
 
+	//gl.SwapIntervalEXT(0);
 }
-
 
 // =================================================================
 function render() {
 	requestAnimationFrame(render);
-	g.frame.count++;
+
+	msPerFrame();
+
+for (var repeat=0; repeat<g.frame.repeat; repeat++){
+
 
 	// look up where the vertex data needs to go.
 	var positionLocation = gl.getAttribLocation(program, "inPosition");
@@ -172,6 +187,7 @@ function render() {
 	gl.drawArrays(gl.TRIANGLES, 0, numVerts);
 
 	// -----------------------------------------------------------------
+}
 
 }
 

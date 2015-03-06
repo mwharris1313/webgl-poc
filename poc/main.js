@@ -67,43 +67,54 @@ function render() {
 	var tw = g.tile.width / g.surface.width;
 	var th = g.tile.height / g.surface.height;
 
+	// Set an image's position and dimensions. 
+	var setTileTexture = function(x, y, width, height, arr){
+		var x1,y1,x2,y2;
+		x1 = x;
+		x2 = x + width;
+		y1 = y;
+		y2 = y + height;
+
+		arr.push(
+				x1, y1,
+				x2, y1,
+				x1, y2,
+				x1, y2,
+				x2, y1,
+				x2, y2
+		);
+
+	}
+
+	var texArray = [];
+	setTileTexture(0.02,0.0,tw,th,texArray);
+	setTileTexture(0.04,0.0,tw,th,texArray);
+	setTileTexture(0.06,0.0,tw,th,texArray);
+	setTileTexture(0.08,0.0,tw,th,texArray);
+
+	setTileTexture(0.10,0.0,tw,th,texArray);
+	setTileTexture(0.12,0.0,tw,th,texArray);
+	setTileTexture(0.14,0.0,tw,th,texArray);
+	setTileTexture(0.16,0.0,tw,th,texArray);
+
+			// 0.0, 0.0,
+			// tw, 0.0,
+			// 0.0, th,
+			// 0.0, th,
+			// tw, 0.0,
+			// tw, th,
+
 	// provide texture coordinates for the rectangle.
 	var texCoordBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
 	gl.bufferData(
 		gl.ARRAY_BUFFER,
-		new Float32Array([
-			0.0, 0.0,
-			tw, 0.0,
-			0.0, th,
-			0.0, th,
-			tw, 0.0,
-			tw, th,
-
-			0.0, 0.0,
-			tw, 0.0,
-			0.0, th,
-			0.0, th,
-			tw, 0.0,
-			tw, th,
-
-			0.0, 0.0,
-			tw, 0.0,
-			0.0, th,
-			0.0, th,
-			tw, 0.0,
-			tw, th,
-
-			0.0, 0.0,
-			tw, 0.0,
-			0.0, th,
-			0.0, th,
-			tw, 0.0,
-			tw, th,
-
-		]),
+		new Float32Array(texArray),
 		gl.STATIC_DRAW
 	);
+
+
+
 
 	gl.enableVertexAttribArray(texCoordLocation);
 	gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
@@ -150,6 +161,11 @@ function render() {
 	setTile(32,32,32,32,array);
 	setTile(64,64,32,32,array);
 	setTile(96,96,32,32,array);
+
+	setTile(128,128,32,32,array);
+	setTile(160,160,32,32,array);
+	setTile(196,196,32,32,array);
+	setTile(228,228,32,32,array);
 
 	gl.bufferData(
 		gl.ARRAY_BUFFER,

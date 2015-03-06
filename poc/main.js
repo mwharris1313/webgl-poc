@@ -4,7 +4,8 @@ var g, gl, program;
 
 g = {
 	surface: {width:640, height:360},
-	tile: {width:32, height:32},
+	tile: {width:32, height:32, rows:11, cols:20},
+	frame: {count:0}
 };
 
 var image;
@@ -54,6 +55,7 @@ function init(){
 // =================================================================
 function render() {
 	requestAnimationFrame(render);
+	g.frame.count++;
 
 	// look up where the vertex data needs to go.
 	var positionLocation = gl.getAttribLocation(program, "inPosition");
@@ -64,16 +66,18 @@ function render() {
 	gl.uniform2f(surfaceLocation, g.surface.width, g.surface.height);
 
 
-	var tw = g.tile.width / g.surface.width;
-	var th = g.tile.height / g.surface.height;
 
 	// Set an image's position and dimensions. 
-	var setTileTexture = function(x, y, width, height, arr){
-		var x1,y1,x2,y2;
+	var setTileTexture = function(col,row,arr){
+		var x1,y1,x2,y2,x,y,tw,th;
+		tw = g.tile.width / g.surface.width;
+		th = g.tile.height / g.surface.height;
+		x = (col-1)*tw;
+		y = (row-1)*th;
 		x1 = x;
-		x2 = x + width;
+		x2 = x + tw;
 		y1 = y;
-		y2 = y + height;
+		y2 = y + th;
 
 		arr.push(
 				x1, y1,
@@ -87,22 +91,11 @@ function render() {
 	}
 
 	var texArray = [];
-	setTileTexture(0.02,0.0,tw,th,texArray);
-	setTileTexture(0.04,0.0,tw,th,texArray);
-	setTileTexture(0.06,0.0,tw,th,texArray);
-	setTileTexture(0.08,0.0,tw,th,texArray);
-
-	setTileTexture(0.10,0.0,tw,th,texArray);
-	setTileTexture(0.12,0.0,tw,th,texArray);
-	setTileTexture(0.14,0.0,tw,th,texArray);
-	setTileTexture(0.16,0.0,tw,th,texArray);
-
-			// 0.0, 0.0,
-			// tw, 0.0,
-			// 0.0, th,
-			// 0.0, th,
-			// tw, 0.0,
-			// tw, th,
+	for (var row=1; row<=g.tile.rows; row++){
+		for (var col=1; col<=g.tile.cols; col++){
+			setTileTexture(row,g.frame.count % 12,texArray);
+		}
+	}
 
 	// provide texture coordinates for the rectangle.
 	var texCoordBuffer = gl.createBuffer();
@@ -138,12 +131,16 @@ function render() {
 	gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
 	// Set an image's position and dimensions. 
-	var setTile = function(x, y, width, height, arr){
-		var x1,y1,x2,y2;
+	var setTile = function(row,col,arr){
+		var x1,y1,x2,y2,x,y,tw,th;
+		tw = g.tile.width;
+		th = g.tile.height;
+		x = (col-1)*tw;
+		y = (row-1)*th;
 		x1 = x;
-		x2 = x + width;
+		x2 = x + tw;
 		y1 = y;
-		y2 = y + height;
+		y2 = y + th;
 
 		arr.push(
 				x1, y1,
@@ -157,31 +154,20 @@ function render() {
 	}
 
 	var array = [];
-	setTile(0,0,32,32,array);
-	setTile(32,32,32,32,array);
-	setTile(64,64,32,32,array);
-	setTile(96,96,32,32,array);
 
-	setTile(128,128,32,32,array);
-	setTile(160,160,32,32,array);
-	setTile(196,196,32,32,array);
-	setTile(228,228,32,32,array);
+	for (var row=1; row<=g.tile.rows; row++){
+		for (var col=1; col<=g.tile.cols; col++){
+			setTile(row,col,array);
+		}
+	}
+
 
 	gl.bufferData(
 		gl.ARRAY_BUFFER,
 		new Float32Array(array),
 		gl.STATIC_DRAW
 	);
-	//setImage(4, 4, g.tile.width, g.tile.height);
 
-	// -----------------------------------------------------------------
-	// trying to draw scaled image on gl canvas
-
-	//setImage(0, 0, image.width, image.height);
-
-
-
-	//setImage(160, 90, 320, 180);
 	var numVerts = array.length / 2;
 	gl.drawArrays(gl.TRIANGLES, 0, numVerts);
 

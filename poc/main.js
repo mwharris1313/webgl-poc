@@ -3,7 +3,8 @@ var log = console.log.bind(console);
 var g, gl, program;
 
 g = {
-	surface: {width:640, height:360}
+	surface: {width:640, height:360},
+	tile: {width:32, height:32},
 };
 
 var image;
@@ -62,25 +63,22 @@ function render() {
 	var surfaceLocation = gl.getUniformLocation(program, "uSurface");
 	gl.uniform2f(surfaceLocation, g.surface.width, g.surface.height);
 
+
+	var tw = g.tile.width / g.surface.width;
+	var th = g.tile.height / g.surface.height;
+
 	// provide texture coordinates for the rectangle.
 	var texCoordBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
 	gl.bufferData(
 		gl.ARRAY_BUFFER,
 		new Float32Array([
-			-0.3, -0.3,
-			1.0, 0.0,
-			0.0, 1.0,
-			0.0, 1.0,
-			1.0, 0.0,
-			1.3, 1.3,
-
 			0.0, 0.0,
-			1.0, 0.0,
-			0.0, 1.0,
-			0.0, 1.0,
-			1.0, 0.0,
-			1.0, 1.0,
+			tw, 0.0,
+			0.0, th,
+			0.0, th,
+			tw, 0.0,
+			tw, th,
 
 		]),
 		gl.STATIC_DRAW
@@ -109,6 +107,7 @@ function render() {
 
 	// Set an image's position and dimensions. 
 	var setImage = function(x, y, width, height){
+		var off = -0.5;
 		var x1,y1,x2,y2;
 		x1 = x;
 		x2 = x + width;
@@ -122,7 +121,7 @@ function render() {
 				x1, y2,
 				x1, y2,
 				x2, y1,
-				x2, y2
+				x2, y2,
 			]),
 			gl.STATIC_DRAW
 		);

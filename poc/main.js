@@ -5,7 +5,8 @@ var g, gl, program;
 g = {
 	surface: {width:640, height:360},
 	tile: {width:32, height:32, rows:13, cols:21},
-	frame: {count:0, tLast:0, repeat:1}
+	frame: {count:0, tLast:0, repeat:1},
+	atlas: {width:2048, height:2048}
 };
 
 var image;
@@ -17,7 +18,8 @@ window.onload = function(){
 	init();
 
 	image = new Image();
-	image.src = "../assets/tile32x32_640x360.png";
+	//image.src = "../assets/tile32x32_640x360.png";
+	image.src = "../assets/atlas2048_32.png";
 	image.onload = function() {
 		window.requestAnimationFrame(render);
 		//startDrawing(img);
@@ -85,8 +87,10 @@ for (var repeat=0; repeat<g.frame.repeat; repeat++){
 	// Set an image's position and dimensions. 
 	var setTileTexture = function(col,row,arr){
 		var x1,y1,x2,y2,x,y,tw,th;
-		tw = g.tile.width / g.surface.width;
-		th = g.tile.height / g.surface.height;
+		//tw = g.tile.width / g.atlas.width;
+		//th = g.tile.height / g.atlas.height;
+		tw = g.tile.width / g.atlas.width;
+		th = g.tile.height / g.atlas.height;
 		x = (col-1)*tw;
 		y = (row-1)*th;
 		x1 = x;

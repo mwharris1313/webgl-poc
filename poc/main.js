@@ -80,6 +80,27 @@ function render() {
 			tw, 0.0,
 			tw, th,
 
+			0.0, 0.0,
+			tw, 0.0,
+			0.0, th,
+			0.0, th,
+			tw, 0.0,
+			tw, th,
+
+			0.0, 0.0,
+			tw, 0.0,
+			0.0, th,
+			0.0, th,
+			tw, 0.0,
+			tw, th,
+
+			0.0, 0.0,
+			tw, 0.0,
+			0.0, th,
+			0.0, th,
+			tw, 0.0,
+			tw, th,
+
 		]),
 		gl.STATIC_DRAW
 	);
@@ -106,33 +127,47 @@ function render() {
 	gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
 
 	// Set an image's position and dimensions. 
-	var setImage = function(x, y, width, height){
-		var off = -0.5;
+	var setTile = function(x, y, width, height, arr){
 		var x1,y1,x2,y2;
 		x1 = x;
 		x2 = x + width;
 		y1 = y;
 		y2 = y + height;
-		gl.bufferData(
-			gl.ARRAY_BUFFER,
-			new Float32Array([
+
+		arr.push(
 				x1, y1,
 				x2, y1,
 				x1, y2,
 				x1, y2,
 				x2, y1,
-				x2, y2,
-			]),
-			gl.STATIC_DRAW
+				x2, y2
 		);
+
 	}
+
+	var array = [];
+	setTile(0,0,32,32,array);
+	setTile(32,32,32,32,array);
+	setTile(64,64,32,32,array);
+	setTile(96,96,32,32,array);
+
+	gl.bufferData(
+		gl.ARRAY_BUFFER,
+		new Float32Array(array),
+		gl.STATIC_DRAW
+	);
+	//setImage(4, 4, g.tile.width, g.tile.height);
 
 	// -----------------------------------------------------------------
 	// trying to draw scaled image on gl canvas
 
-	setImage(0, 0, image.width, image.height);
+	//setImage(0, 0, image.width, image.height);
+
+
+
 	//setImage(160, 90, 320, 180);
-	gl.drawArrays(gl.TRIANGLES, 0, 6);
+	var numVerts = array.length / 2;
+	gl.drawArrays(gl.TRIANGLES, 0, numVerts);
 
 	// -----------------------------------------------------------------
 

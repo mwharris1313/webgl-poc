@@ -55,14 +55,12 @@ function render() {
 	requestAnimationFrame(render);
 
 	// look up where the vertex data needs to go.
-	var positionLocation = gl.getAttribLocation(program, "aPosition");
-	var texCoordLocation = gl.getAttribLocation(program, "aTexCoord");
+	var positionLocation = gl.getAttribLocation(program, "inPosition");
+	var texCoordLocation = gl.getAttribLocation(program, "inTexCoord");
 
-	// lookup uniforms
-	var resolutionLocation = gl.getUniformLocation(program, "uResolution");
-
-	// set the resolution
-	gl.uniform2f(resolutionLocation, g.surface.width, g.surface.height);
+	// uniforms
+	var surfaceLocation = gl.getUniformLocation(program, "uSurface");
+	gl.uniform2f(surfaceLocation, g.surface.width, g.surface.height);
 
 	// provide texture coordinates for the rectangle.
 	var texCoordBuffer = gl.createBuffer();
@@ -70,19 +68,27 @@ function render() {
 	gl.bufferData(
 		gl.ARRAY_BUFFER,
 		new Float32Array([
+			-0.3, -0.3,
+			1.0, 0.0,
+			0.0, 1.0,
+			0.0, 1.0,
+			1.0, 0.0,
+			1.3, 1.3,
+
 			0.0, 0.0,
 			1.0, 0.0,
 			0.0, 1.0,
 			0.0, 1.0,
 			1.0, 0.0,
-			1.0, 1.0]),
+			1.0, 1.0,
+
+		]),
 		gl.STATIC_DRAW
 	);
 
 	gl.enableVertexAttribArray(texCoordLocation);
 	gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
 
-	// Create a texture.
 	var texture = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 
@@ -92,8 +98,7 @@ function render() {
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
-	// Upload the image into the texture.
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image); // image into the texture.
 
 
 	// Create a buffer for the position of the rectangle corners.
@@ -104,10 +109,11 @@ function render() {
 
 	// Set an image's position and dimensions. 
 	var setImage = function(x, y, width, height){
-		var x1 = x;
-		var x2 = x + width;
-		var y1 = y;
-		var y2 = y + height;
+		var x1,y1,x2,y2;
+		x1 = x;
+		x2 = x + width;
+		y1 = y;
+		y2 = y + height;
 		gl.bufferData(
 			gl.ARRAY_BUFFER,
 			new Float32Array([
@@ -126,6 +132,7 @@ function render() {
 	// trying to draw scaled image on gl canvas
 
 	setImage(0, 0, image.width, image.height);
+	//setImage(160, 90, 320, 180);
 	gl.drawArrays(gl.TRIANGLES, 0, 6);
 
 	// -----------------------------------------------------------------

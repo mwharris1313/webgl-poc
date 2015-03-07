@@ -20,8 +20,10 @@ canvas {
 <script id="VertexShader" type="Vertex-Shader">
 attribute vec2 inPosition; // input qualifier for vertex shader , different for each invocation
 attribute vec2 inTexCoord; // input qualifier for vertex shader , of program stage
-uniform vec2 uSurface;     // remains "uniform" per rendering call
+uniform vec2 uScreen;     // remains "uniform" per rendering call
 varying vec2 texCoord;     // output qualifier for vertex shader
+
+uniform vec2 uMisc;     // remains "uniform" per rendering call
 
 /*
 ----------------------------------------------
@@ -73,9 +75,11 @@ varying:
 
 void main() {
     // map texture to homogeneous coordinate system , #clipspace
-    vec2 mapping = (2.0 * inPosition / uSurface - 1.0) * vec2(1, -1);
+if(uMisc.x == 1.0){
+    vec2 mapping = (2.0 * inPosition / uScreen - 1.0) * vec2(1, -1);
     gl_Position = vec4(mapping, 0, 1);
     texCoord = inTexCoord;
+}
 /*
 ----------------------------------------------
 gl_Position:

@@ -3,10 +3,11 @@ var log = console.log.bind(console);
 var g, gl, program;
 
 g = {
-    surface: {width:640, height:360},
+    screen: {width:640, height:360},
     tile: {width:32, height:32, rows:13, cols:21},
     frame: {count:0, tLast:0, profileCount:15, repeat:1},
-    atlas: {width:2048, height:2048}
+    atlas: {width:2048, height:2048},
+    toggle: {onClick:true}
 };
 
 var image;
@@ -38,10 +39,35 @@ var msPerFrame = function(){
     g.frame.count++;
 }
 
+
+function onClick(){
+    log('onClick');
+    g.toggle.onClick = !g.toggle.onClick;
+    log('g.toggle.onClick', g.toggle.onClick); 
+}
+function onMouseMove(){
+    log('onMouseMove');
+}
+function onTouchStart(){
+    log('onTouchStart');
+}
+function onTouchMove(){
+    log('onTouchMove');
+}
+
+
 // =================================================================
 function init(){
 
     var canvas = document.getElementById('glCanvas');
+
+    //document.addEventListener('keydown',    onkeydown,    false);
+    //document.addEventListener('keyup',      onkeyup,      false);
+    canvas.addEventListener('click', onClick, false);
+    canvas.addEventListener('mousemove', onMouseMove, false);
+    canvas.addEventListener('touchstart', onTouchStart, false);
+    canvas.addEventListener('touchmove', onTouchMove, false);
+
 
     var errorStatus = "";
     function onContextCreationError(event) {
@@ -53,8 +79,8 @@ function init(){
     gl = canvas.getContext("experimental-webgl");
     if(!gl) alert("ERROR: WebGL Context Not Created : " + errorStatus);
 
-    canvas.width = g.surface.width;
-    canvas.height = g.surface.height;
+    canvas.width = g.screen.width;
+    canvas.height = g.screen.height;
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
 
     var vertexShader = createShaderEmbedded(gl, "VertexShader");
@@ -62,8 +88,8 @@ function init(){
     program = createProgram(gl, [vertexShader, fragmentShader]);
     gl.useProgram(program);
 
-    //gl.SwapIntervalEXT(0);
 }
+
 
 // =================================================================
 function render() {
@@ -79,16 +105,18 @@ for (var repeat=0; repeat<g.frame.repeat; repeat++){
     var texCoordLocation = gl.getAttribLocation(program, "inTexCoord");
 
     // uniforms
-    var surfaceLocation = gl.getUniformLocation(program, "uSurface");
-    gl.uniform2f(surfaceLocation, g.surface.width, g.surface.height);
+    var screenLocation = gl.getUniformLocation(program, "uScreen");
+    gl.uniform2f(screenLocation, g.screen.width, g.screen.height);
+
+    var miscLocation = gl.getUniformLocation(program, "uMisc");
+    var xMisc = g.toggle.onClick ? 1.0 : 0.0;
+    gl.uniform2f(miscLocation, xMisc, 1.0);
 
 
 
     // Set an image's position and dimensions. 
     var setTileTexture = function(col,row,arr){
         var x1,y1,x2,y2,x,y,tw,th;
-        //tw = g.tile.width / g.atlas.width;
-        //th = g.tile.height / g.atlas.height;
         tw = g.tile.width / g.atlas.width;
         th = g.tile.height / g.atlas.height;
         x = (col-1)*tw;
@@ -109,12 +137,53 @@ for (var repeat=0; repeat<g.frame.repeat; repeat++){
 
     }
 
-    var texArray = [];
-    for (var row=1; row<=g.tile.rows; row++){
-        for (var col=1; col<=g.tile.cols; col++){
-            setTileTexture(row,g.frame.count % 32,texArray);
-        }
+    // Set an image's position and dimensions. 
+    var setTileTextureNew = function(col,row,arr){
+        var x1,y1,x2,y2,x,y,tw,th;
+        tw = g.screen.width / g.atlas.width;
+        th = g.screen.height / g.atlas.height;
+        x = 0;
+        y = 0;
+        x1 = x;
+        x2 = x + tw;
+        y1 = y;
+        y2 = y + th;
+
+        arr.push(
+                x1, y1,
+                x2, y1,
+                x1, y2,
+                x1, y2,
+                x2, y1,
+                x2, y2
+        );
+
     }
+    // Set an image's position and dimensions. 
+    var setTileNew = function(row,col,arr){
+        var x1,y1,x2,y2,x,y,tw,th;
+        tw = g.screen.width;
+        th = g.screen.height;
+        x = 0;
+        y = 0;
+        x1 = x;
+        x2 = x + tw;
+        y1 = y;
+        y2 = y + th;
+
+        arr.push(
+                x1, y1,
+                x2, y1,
+                x1, y2,
+                x1, y2,
+                x2, y1,
+                x2, y2
+        );
+
+    }
+
+    var texArray = [];
+    setTileTextureNew(1,1,texArray);
 
     // provide texture coordinates for the rectangle.
     var texCoordBuffer = gl.createBuffer();
@@ -171,11 +240,7 @@ for (var repeat=0; repeat<g.frame.repeat; repeat++){
 
     var array = [];
 
-    for (var row=1; row<=g.tile.rows; row++){
-        for (var col=1; col<=g.tile.cols; col++){
-            setTile(row,col,array);
-        }
-    }
+    setTileNew(1,1,array);
 
 
     gl.bufferData(

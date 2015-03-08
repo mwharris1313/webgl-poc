@@ -23,7 +23,7 @@ attribute vec2 inTexCoord; // input qualifier for vertex shader , of program sta
 uniform vec2 uScreen;     // remains "uniform" per rendering call
 varying vec2 texCoord;     // output qualifier for vertex shader
 
-uniform vec2 uMisc;     // remains "uniform" per rendering call
+//uniform vec2 uMouse;     // remains "uniform" per rendering call
 
 /*
 ----------------------------------------------
@@ -75,11 +75,12 @@ varying:
 
 void main() {
     // map texture to homogeneous coordinate system , #clipspace
-if(uMisc.x == 1.0){
-    vec2 mapping = (2.0 * inPosition / uScreen - 1.0) * vec2(1, -1);
-    gl_Position = vec4(mapping, 0, 1);
-    texCoord = inTexCoord;
-}
+
+    if(true){
+        vec2 mapping = (2.0 * inPosition / uScreen - 1.0) * vec2(1, -1);
+        gl_Position = vec4(mapping, 0, 1);
+        texCoord = inTexCoord;
+    }
 /*
 ----------------------------------------------
 gl_Position:
@@ -105,6 +106,8 @@ SUMMARY:
 precision mediump float;
 uniform sampler2D atlas;
 varying vec2 texCoord;     // output qualifier for vertex shader , texCoords from vertex shader
+
+uniform vec2 uMouse;     // remains "uniform" per rendering call
 
 /*
 ----------------------------------------------
@@ -178,7 +181,10 @@ sampler2D:
 ----------------------------------------------
 */
 void main() {
-   gl_FragColor = texture2D(atlas, texCoord);
+    if (texCoord.x > uMouse.x/2048.0 && texCoord.y > uMouse.y/2048.0) {
+        gl_FragColor = texture2D(atlas, texCoord);
+
+    }
 /*
 ----------------------------------------------
 gl_FragColor:

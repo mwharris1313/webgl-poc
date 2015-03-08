@@ -1,13 +1,18 @@
 "use strict";
 var log = console.log.bind(console);
 var g, gl, program;
+var canvas;
 
 g = {
+    isDebug: true,
+    isProfiling: false,
     screen: {width:640, height:360},
     tile: {width:32, height:32, rows:13, cols:21},
     frame: {count:0, tLast:0, profileCount:15, repeat:1},
     atlas: {width:2048, height:2048},
-    toggle: {onClick:true}
+    toggle: {onClick:true},
+    canvas: {offsetLeft:0,offsetTop:0},
+    mouse: {x:0, y:0}
 };
 
 var image;
@@ -30,43 +35,55 @@ window.onload = function(){
 
 // =================================================================
 var msPerFrame = function(){
-    if(g.frame.count % g.frame.profileCount === 0) {
-        var tTemp = window.performance.now();
-        var dt = tTemp - g.frame.tLast;
-        g.frame.tLast = tTemp;
-        log(dt/g.frame.profileCount, 'ms/frame');
+    if (g.isProfiling){
+        if(g.frame.count % g.frame.profileCount === 0) {
+            var tTemp = window.performance.now();
+            var dt = tTemp - g.frame.tLast;
+            g.frame.tLast = tTemp;
+            log(dt/g.frame.profileCount, 'ms/frame');
+        }
+        g.frame.count++;
     }
-    g.frame.count++;
 }
 
+function canvasXY(tag) {
+    var x, y;
+    x = tag.offsetLeft;
+    y = tag.offsetTop;
 
-function onClick(){
-    log('onClick');
+    if (tag.offsetParent) {
+        while (tag = tag.offsetParent){
+            x += tag.offsetLeft;
+            y += tag.offsetTop;
+        }
+    }
+    return [x, y];
+}
+
+function onClick(e){
+    g.mouse.x = e.clientX-g.canvas.offsetLeft;
+    g.mouse.y = e.clientY-g.canvas.offsetTop;
+    log('onClick', g.mouse);
     g.toggle.onClick = !g.toggle.onClick;
-    log('g.toggle.onClick', g.toggle.onClick); 
 }
-function onMouseMove(){
-    log('onMouseMove');
+function onMouseMove(e){
+    g.mouse.x = e.clientX-g.canvas.offsetLeft;
+    g.mouse.y = e.clientY-g.canvas.offsetTop;
+    log('onMouseMove', g.mouse);
 }
-function onTouchStart(){
-    log('onTouchStart');
+function onTouchStart(e){
+    log('onTouchStart',canvasXY(e.clientX,e.clientY));
 }
-function onTouchMove(){
-    log('onTouchMove');
+function onTouchMove(e){
+    log('onTouchMove',canvasXY(e.clientX,e.clientY));
 }
 
 
 // =================================================================
 function init(){
 
-    var canvas = document.getElementById('glCanvas');
+    canvas = document.getElementById('glCanvas');
 
-    //document.addEventListener('keydown',    onkeydown,    false);
-    //document.addEventListener('keyup',      onkeyup,      false);
-    canvas.addEventListener('click', onClick, false);
-    canvas.addEventListener('mousemove', onMouseMove, false);
-    canvas.addEventListener('touchstart', onTouchStart, false);
-    canvas.addEventListener('touchmove', onTouchMove, false);
 
 
     var errorStatus = "";
@@ -88,6 +105,20 @@ function init(){
     program = createProgram(gl, [vertexShader, fragmentShader]);
     gl.useProgram(program);
 
+
+
+    var xy = canvasXY(canvas);
+    g.canvas.offsetLeft = xy[0];
+    g.canvas.offsetTop = xy[1];
+    log(g.canvas.offsetLeft,g.canvas.offsetTop);
+
+    //document.addEventListener('keydown',    onkeydown,    false);
+    //document.addEventListener('keyup',      onkeyup,      false);
+    canvas.addEventListener('click', onClick, false);
+    canvas.addEventListener('mousemove', onMouseMove, false);
+    canvas.addEventListener('touchstart', onTouchStart, false);
+    canvas.addEventListener('touchmove', onTouchMove, false);
+
 }
 
 
@@ -108,9 +139,8 @@ for (var repeat=0; repeat<g.frame.repeat; repeat++){
     var screenLocation = gl.getUniformLocation(program, "uScreen");
     gl.uniform2f(screenLocation, g.screen.width, g.screen.height);
 
-    var miscLocation = gl.getUniformLocation(program, "uMisc");
-    var xMisc = g.toggle.onClick ? 1.0 : 0.0;
-    gl.uniform2f(miscLocation, xMisc, 1.0);
+    var mouseLocation = gl.getUniformLocation(program, "uMouse");
+    gl.uniform2f(mouseLocation, g.mouse.x, g.mouse.y);
 
 
 

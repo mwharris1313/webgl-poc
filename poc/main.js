@@ -231,6 +231,29 @@ function init(){
 
 }
 // =================================================================
+/*
+    May shed some light on possible causes of slowdown:
+
+    (http://stackoverflow.com/questions/9863969/updating-a-texture-in-opengl-with-glteximage2d)
+    In modern OpenGL there are 4 different methods to update 2D textures:
+    1) glTexImage2D - the slowest one, recreates internal data structures.
+    2) glTexSubImage2D - a bit faster, but can't change the parameters
+        (size, pixel format) of the image.
+    3) Render-to-texture with FBO - update texture entirely on GPU, very fast.
+        Refer to this answer for more details: http://stackoverflow.com/a/10702468/1065190
+    4) Pixel Buffer Object PBO - for fast uploads from CPU to GPU,
+        not supported (yet) on OpenGL ES.
+
+    Also, for reference:
+    (http://stackoverflow.com/questions/3887636/how-to-manipulate-texture-content-on-the-fly/10702468#10702468)
+
+    Appears glTexImage2d() could be the culprit. It seems it copies the full texture
+    (2048px,2048px) on every render pass. It seems Render-to-texture would be the best
+    alternative since it performs updates entirely on GPU.
+
+*/
+
+
 function render() {
     requestAnimationFrame(render);
 

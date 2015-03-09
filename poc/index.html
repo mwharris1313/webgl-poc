@@ -185,13 +185,16 @@ void main() {
 
     float s = -32.0 * (1.0 / 2048.0);
     vec2 temp = vec2(uMouse.x/2048.0, uMouse.y/2048.0);
-    if (texCoord.y < (16.0+uMouse.y)/2048.0 && texCoord.y > (-16.0+uMouse.y)/2048.0 ) {
-        //gl_FragColor = texture2D(atlas, texCoord);
-        gl_FragColor = texture2D(atlas, vec2(texCoord.x, s+texCoord.y) );
-    } else {
-        gl_FragColor = texture2D(atlas, texCoord);
-        //gl_FragColor = vec4(0,0,255,1);        
-    }
+    // if (texCoord.y < (16.0+uMouse.y)/2048.0 && texCoord.y > (-16.0+uMouse.y)/2048.0 ) {
+    //     //gl_FragColor = texture2D(atlas, texCoord);
+    //     gl_FragColor = texture2D(atlas, vec2(texCoord.x, s+texCoord.y) );
+    // } else {
+    //     gl_FragColor = texture2D(atlas, texCoord);
+    //     //gl_FragColor = vec4(0,0,255,1);        
+    // }
+
+    //gl_FragColor = texture2D(atlas, texCoord);
+    gl_FragColor = texture2D(atlas, vec2(texCoord.x+uMouse.x/768.0,texCoord.y+uMouse.y/512.0));
 
 /*
 ----------------------------------------------

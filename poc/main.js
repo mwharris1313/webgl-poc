@@ -7,6 +7,8 @@ var texCoordBuffer;
 var array = [];
 var texture;
 var buffer;
+var renderTexture;
+var frameBuffer;
 
 // look up where the vertex data needs to go.
 var positionLocation;
@@ -14,17 +16,15 @@ var texCoordLocation;
 var screenLocation;
 var mouseLocation;
 
-
-
-
-
+var tex;
 
 g = {
     isDebug: false,
     isProfiling: true,
     screen: {width:640, height:360},
+    //screen: {width:1280, height:720},
     tile: {width:32, height:32, rows:13, cols:21},
-    frame: {count:0, tLast:0, profileCount:15, repeat:1},
+    frame: {count:0, tLast:0, profileCount:60, repeat:1},
     atlas: {width:2048, height:2048},
     toggle: {onClick:true},
     canvas: {offsetLeft:0,offsetTop:0},
@@ -37,14 +37,11 @@ var posY = 0;
 // =================================================================
 window.onload = function(){
 
-    init();
-
     image = new Image();
-    //image.src = "../assets/tile32x32_640x360.png";
     image.src = "../assets/atlas2048_32.png";
     image.onload = function() {
-        window.requestAnimationFrame(render);
-        //startDrawing(img);
+    //     window.requestAnimationFrame(render);
+        init();
     }
 
 }
@@ -228,62 +225,52 @@ function init(){
         gl.STATIC_DRAW
     );
 
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image); // image into the texture.
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.enableVertexAttribArray(positionLocation);
+    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+
+    window.requestAnimationFrame(render);
+
 
 }
 // =================================================================
 /*
-    May shed some light on possible causes of slowdown:
-
-    (http://stackoverflow.com/questions/9863969/updating-a-texture-in-opengl-with-glteximage2d)
-    In modern OpenGL there are 4 different methods to update 2D textures:
-    1) glTexImage2D - the slowest one, recreates internal data structures.
-    2) glTexSubImage2D - a bit faster, but can't change the parameters
-        (size, pixel format) of the image.
-    3) Render-to-texture with FBO - update texture entirely on GPU, very fast.
-        Refer to this answer for more details: http://stackoverflow.com/a/10702468/1065190
-    4) Pixel Buffer Object PBO - for fast uploads from CPU to GPU,
-        not supported (yet) on OpenGL ES.
-
-    Also, for reference:
-    (http://stackoverflow.com/questions/3887636/how-to-manipulate-texture-content-on-the-fly/10702468#10702468)
-
-    Appears glTexImage2d() could be the culprit. It seems it copies the full texture
-    (2048px,2048px) on every render pass. It seems Render-to-texture would be the best
-    alternative since it performs updates entirely on GPU.
-
+    Source for further research on Render-To-Texture:
+    (http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/)
+    (http://stackoverflow.com/questions/16287481/webgl-display-framebuffer)
 */
 
 
 function render() {
     requestAnimationFrame(render);
-
     msPerFrame();
 
-    for (var repeat=0; repeat<g.frame.repeat; repeat++){
+// can't find a way to disable vsync,
+// only way to gauge performance in efficient performance scenarios (beyond 60fps)
+// by running render loop multiple times, increasing until it dips below 17ms per frame
+for (var repeat=0; repeat<g.frame.repeat; repeat++){
 
-        gl.uniform2f(mouseLocation, g.mouse.x, g.mouse.y);
+    gl.uniform2f(mouseLocation, g.mouse.x, g.mouse.y);
 
-        // provide texture coordinates for the rectangle.
-        gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+    //gl.bindBuffer(gl.ARRAY_BUFFER, texture);
+    //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
-        gl.enableVertexAttribArray(texCoordLocation);
-        gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+    // Create a framebuffer and attach the texture.
+    frameBuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+    //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.clearColor(1, 0, 1, 1); // red
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-        gl.bindTexture(gl.TEXTURE_2D, texture);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image); // image into the texture.
-
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-        gl.enableVertexAttribArray(positionLocation);
-        gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-
-        var numVerts = array.length / 2;
-        gl.drawArrays(gl.TRIANGLES, 0, numVerts);
-
-
-        // -----------------------------------------------------------------
-    }
+    // -----------------------------------------------------------------
+} // for loop, repeat
 
 }
 

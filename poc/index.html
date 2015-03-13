@@ -42,25 +42,35 @@ void main() {
 <!-- ****************************************************************************************** -->
 <script id="FragmentShader" type="Fragment-Shader">
 precision mediump float;
-uniform sampler2D atlasTexture;
-uniform sampler2D clearTexture;
+uniform sampler2D clear;
+uniform sampler2D atlas;
+uniform sampler2D edit;
+
 varying vec2 texCoord;     // output qualifier for vertex shader , texCoords from vertex shader
 varying vec2 screen;
 
 uniform vec2 uMouse;     // remains "uniform" per rendering call
 uniform vec2 uCamera;     // remains "uniform" per rendering call
 uniform float uTile[10];
+uniform float uIsFirst;
 
 void main() {
 
     //gl_FragColor = texture2D( atlasTexture, texCoord);
-    vec4 texAtlas = texture2D( atlasTexture, texCoord);
-    vec4 texClear = texture2D( clearTexture, texCoord);
+
+    vec4 clearColor = texture2D( clear, texCoord);
+    vec4 atlasColor = texture2D( atlas, texCoord);
+    vec4 editColor = texture2D( edit, texCoord);
 
     //gl_FragColor = texClear;
     //gl_FragColor = texAtlas;
+    vec4 color;
+    if (clearColor != vec4(0,0,0,0)) color = clearColor;
+    if (atlasColor != vec4(0,0,0,0)) color = atlasColor;
+    if (editColor != vec4(0,0,0,0)) color = editColor;
 
-    gl_FragColor =  texAtlas / texClear;
+    gl_FragColor =  color;
+
 
 }
 </script>

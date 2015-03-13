@@ -13,6 +13,8 @@ var mouseLocation;
 var cameraLocation;
 var tileLocation;
 
+var isFirstLocation = 0.0;
+
 var frameBuffer;
 
 // ***********************************************************
@@ -52,8 +54,13 @@ function initGL(){
         errorStatus = e.statusMessage || "Unknown";
     }
     canvas.addEventListener("webglcontextcreationerror", onContextCreationError, false);
-
     gl = canvas.getContext("experimental-webgl");
+    //gl = canvas.getContext("experimental-webgl", {alpha: false});
+    //gl = canvas.getContext("experimental-webgl", {premultipliedAlpha: false});
+
+
+
+//{premultipliedAlpha: false}
     if(!gl) alert("ERROR: WebGL Context Not Created : " + errorStatus);
 
     canvas.width = g.screen.width;
@@ -112,6 +119,9 @@ function initUniforms(){
     tileLocation = gl.getUniformLocation(program, "uTile");
     gl.uniform1fv(tileLocation, tileArray);
 
+    isFirstLocation = gl.getUniformLocation(program, "uIsFirst");
+    gl.uniform1f(isFirstLocation, 0.0);
+
     // GLfloat v[10] = {...};
     // glUniform1fv(glGetUniformLocation(program, "v"), 10, v);
 
@@ -165,6 +175,7 @@ function initTextures(){
 
     image.initTexture('clear', positionLocation); // not sure if positionLocation is even necessary
     image.initTexture('atlas', positionLocation); // will look into later...
+    image.initTexture('edit', positionLocation); // will look into later...
 
 }
 
@@ -183,19 +194,33 @@ function render() {
     dbg.funcFreq(thisFile, thisFunc);
 
     requestAnimationFrame(render);
+
+    
     dbg.msPerFrame(thisFile, thisFunc);
 
     // can't find a way to disable vsync,
     // only way to gauge performance in efficient performance scenarios (beyond 60fps)
     // by running render loop multiple times, increasing until it dips below 17ms per frame
     for (var repeat=0; repeat<g.frame.repeat; repeat++){
+gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        for (var i=0; i<image.keys.length; i++){
+            if (image.ref[image.keys[i]].textureUnit !== undefined) {
+                gl.activeTexture(image.ref[image.keys[i]].textureUnit);
+                gl.bindTexture(gl.TEXTURE_2D, image.ref[image.keys[i]].texture);
+            }
+        }
 
-        gl.activeTexture(image.ref['clear'].textureUnit);
-        gl.bindTexture(gl.TEXTURE_2D, image.ref['clear'].texture);
-        gl.activeTexture(image.ref['atlas'].textureUnit);
-        gl.bindTexture(gl.TEXTURE_2D, image.ref['atlas'].texture);
 
         gl.uniform2f(mouseLocation, g.mouse.x, g.mouse.y);
+        if (g.frame.count === 0){
+            gl.uniform1f(isFirstLocation, 0.0);
+            g.frame.count++;
+        } else {
+            gl.uniform1f(isFirstLocation, 1.0);
+        }
+
         //gl.uniform2f(cameraLocation, g.mouse.x, g.mouse.y);
 
         //gl.bindBuffer(gl.ARRAY_BUFFER, texture);
@@ -203,16 +228,35 @@ function render() {
 
         frameBuffer = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+        //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['clear'].texture, 0);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['clear'].texture, 0);
         gl.clearColor(0, 1, 1, 1); // green;
         gl.clear(gl.COLOR_BUFFER_BIT);
 
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['atlas'].texture, 0);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.clearColor(1, 0, 1, 1); // red
-        gl.clear(gl.COLOR_BUFFER_BIT);
+
+
+        // for (var i=0; i<image.keys.length; i++){
+        //     if (image.ref[image.keys[i]].textureUnit !== undefined) {
+        //         gl.activeTexture(image.ref[image.keys[i]].textureUnit);
+        //         gl.bindTexture(gl.TEXTURE_2D, image.ref[image.keys[i]].texture);
+        //     }
+        // }
+
+
+        //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['atlas'].texture, 0);
+
+
+        //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['edit'].texture, 0);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        // // Set the backbuffer's alpha to 1.0
+        // gl.clearColor(1, 1, 1, 1);
+        // gl.colorMask(false, false, false, true);
+        // gl.clear(gl.COLOR_BUFFER_BIT);
+
+
 
         // -----------------------------------------------------------------
     } // for loop, repeat

@@ -43,7 +43,7 @@ void main() {
 <script id="FragmentShader" type="Fragment-Shader">
 precision mediump float;
 uniform sampler2D atlasTexture;
-uniform sampler2D tileMapTexture;
+uniform sampler2D clearTexture;
 varying vec2 texCoord;     // output qualifier for vertex shader , texCoords from vertex shader
 varying vec2 screen;
 
@@ -55,12 +55,16 @@ void main() {
 
     //gl_FragColor = texture2D( atlasTexture, texCoord);
     vec4 texAtlas = texture2D( atlasTexture, texCoord);
-    vec4 texBlank = texture2D( tileMapTexture, texCoord * 4.0);
+    vec4 texClear = texture2D( clearTexture, texCoord);
 
-    gl_FragColor = texBlank + texAtlas;
+    //gl_FragColor = texBlank + texAtlas;
+    //gl_FragColor = texBlank;
     //gl_FragColor = texBlank * texAtlas;
     //gl_FragColor = texBlank;
     //gl_FragColor = texAtlas;
+
+    //gl_FragColor = texAtlas;
+    gl_FragColor =   texAtlas / texClear;
 
 }
 </script>

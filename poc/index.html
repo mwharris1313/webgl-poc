@@ -40,7 +40,7 @@ void main() {
 <!-- ****************************************************************************************** -->
 <script id="FragmentShader" type="Fragment-Shader">
 precision mediump float;
-uniform sampler2D atlas;
+uniform sampler2D atlasTexture;
 varying vec2 texCoord;     // output qualifier for vertex shader , texCoords from vertex shader
 varying vec2 screen;
 
@@ -52,8 +52,26 @@ varying float tile;
 void main() {
     //tile = 1.0;
 
-    gl_FragColor = texture2D(atlas, vec2(texCoord.x+uCamera.x/screen.x,texCoord.y+uCamera.y/screen.y));
+    //gl_FragColor = texture2D(atlasTexture, vec2(texCoord.x+uCamera.x/screen.x,texCoord.y+uCamera.y/screen.y));
     //gl_FragColor = texture2D(atlas, texCoord);
+    vec2 tc;
+
+    //0.312, 1.0
+    // x - y*floor(x/y)
+    float fx = 64.0;
+    float fy = 64.0;
+    float x = texCoord.x;
+    float y = texCoord.y;
+    float m = 4.0;
+    float rx = x*fx - m * floor(x*fx/m);
+    float ry = y*fx - m * floor(y*fx/m);
+    tc = vec2 ( rx/fx + uCamera.x/2048.0,ry/fy + uCamera.y/2048.0);
+
+    //tc = vec2(texCoord.x , texCoord.y);
+    gl_FragColor = texture2D( atlasTexture, tc);
+
+
+
 }
 </script>
 

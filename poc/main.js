@@ -254,6 +254,8 @@ function render() {
     for (var repeat=0; repeat<g.frame.repeat; repeat++){
 
         gl.uniform2f(mouseLocation, g.mouse.x, g.mouse.y);
+        gl.uniform2f(cameraLocation, g.mouse.x, g.mouse.y);
+
 
         //gl.bindBuffer(gl.ARRAY_BUFFER, texture);
         //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);

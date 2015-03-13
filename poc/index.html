@@ -19,213 +19,45 @@ canvas {
 <script src="../lib/glUtil.js"></script>
 <script src="main.js"></script>
 
-<!-- =========================================================== -->
+<!-- ****************************************************************************************** -->
 <script id="VertexShader" type="Vertex-Shader">
-attribute vec2 inPosition; // input qualifier for vertex shader , different for each invocation
-attribute vec2 inTexCoord; // input qualifier for vertex shader , of program stage
-uniform vec2 uScreen;     // remains "uniform" per rendering call
-varying vec2 texCoord;     // output qualifier for vertex shader
+attribute vec2 inPosition;      // input qualifier for vertex shader , different for each invocation
+attribute vec2 inScreenVertex;  // input qualifier for vertex shader , of program stage
+varying vec2 texCoord;          // output qualifier for vertex shader
 
-//uniform vec2 uMouse;     // remains "uniform" per rendering call
+uniform vec2 uScreen;           // remains "uniform" per rendering call
+varying vec2 screen;            // output qualifier for vertex shader
 
-/*
-----------------------------------------------
-attribute:
-
-    (https://www.opengl.org/wiki/Type_Qualifier_(GLSL)#Removed_qualifiers)
-    The following qualifiers are deprecated as of GLSL 1.30 (OpenGL 3.0) and
-    removed from GLSL 1.40 and above.
-    The attribute​ qualifier is effectively equivalent to an input qualifier in vertex shaders.
-    It cannot be used in any other shader stage. It cannot be used in interface blocks.
-    The varying​ qualifier is equivalent to the input of a fragment shader or 
-    the output of a vertex shader. It cannot be used in any other shader stages. 
-    It cannot be used in interface blocks.
-----------------------------------------------
-vec2:
-
-    (http://en.wikibooks.org/wiki/GLSL_Programming/Vector_and_Matrix_Operations)
-    data type, vec2, vec3, and vec4 represent 2D, 3D, and 4D floating-point vectors.
-----------------------------------------------
-uniform:
-
-    (https://www.opengl.org/wiki/Uniform_(GLSL))
-    A uniform is a global GLSL variable declared with the "uniform" storage qualifier.
-    These act as parameters that the user of a shader program can pass to that program.
-    They are stored in a program object.
-
-    Uniforms are so named because they do not change from 
-    one execution of a shader program to the next within a particular rendering call.
-    This makes them unlike shader stage inputs and outputs,
-    which are often different for each invocation of a program stage.
-----------------------------------------------
-varying:
-
-    (https://www.opengl.org/wiki/Type_Qualifier_(GLSL)#Removed_qualifiers)
-    The varying​ qualifier is equivalent to the input of a fragment shader or
-    the output of a vertex shader. It cannot be used in any other shader stages.
-    It cannot be used in interface blocks.
-
-    (https://www.opengl.org/sdk/docs/tutorials/ClockworkCoders/varying.php)
-    Varying variables provide an interface between Vertex and Fragment Shader.
-    Vertex Shaders compute values per vertex and fragment shaders compute values per fragment.
-    If you define a varying variable in a vertex shader,
-    its value will be interpolated (perspective-correct) over the primitive being rendered
-    and you can access the interpolated value in the fragment shader.
-    Varying can be used only with the data types float, vec2, vec3, vec4, mat2, mat3, mat4.
-    (arrays of them too)
-----------------------------------------------
-*/
-
+//uniform vec2 uMouse;           // remains "uniform" per rendering call
 void main() {
-    // map texture to homogeneous coordinate system , #clipspace
-
-    if(true){
-        vec2 mapping = (2.0 * inPosition / uScreen - 1.0) * vec2(1, -1);
-        gl_Position = vec4(mapping, 0, 1);
-        texCoord = inTexCoord;
-    }
-/*
-----------------------------------------------
-gl_Position:
-
-    (https://www.opengl.org/wiki/Built-in_Variable_(GLSL)#Vertex_shader_outputs)
-    Built-in Variable, the clip-space output position of the current vertex.
-----------------------------------------------
-clip-space:
-----------------------------------------------
-*/
+    screen = uScreen;
+    vec2 mapping = (2.0 * inPosition / screen - 1.0) * vec2(1, -1);
+    gl_Position = vec4(mapping, 0, 1);
+    texCoord = inScreenVertex;
 }
-
-/*********************************************
-SUMMARY:
-
-    (http://webglfundamentals.org/webgl/lessons/webgl-fundamentals.html)
-    WebGL only cares about 2 things. Clipspace coordinates in 2D and colors. 
-*********************************************/
 </script>
 
-<!-- =========================================================== -->
+<!-- ****************************************************************************************** -->
 <script id="FragmentShader" type="Fragment-Shader">
 precision mediump float;
 uniform sampler2D atlas;
 varying vec2 texCoord;     // output qualifier for vertex shader , texCoords from vertex shader
+varying vec2 screen;
 
 uniform vec2 uMouse;     // remains "uniform" per rendering call
+uniform vec2 uCamera;     // remains "uniform" per rendering call
 
-/*
-----------------------------------------------
-precision:
+varying float tile;
 
-    (http://www.shaderific.com/glsl-qualifiers/)
-    Precision Qualifier, highp, mediump, lowp (high, medium, and low precision)
-----------------------------------------------
-mediump:
-
-    Medium Precision Qualifier
-    The qualifier mediump is used to specify a precision between the highest and lowest
-    available precision for a variable. The variable has to be an integer or
-    a floating point scalar or a vector or matrix based on these types.
-    The precision qualifier precedes the type in the variable declaration.
-
-    In the vertex shader the use of a precision qualifier is optional.
-    If no qualifier is given all variables are of highest precision.
-    In the fragment shader a precision qualifier has to be used when declaring a variable
-    unless a default precision has been defined for the specific type.
-
-    varying mediump vec2 textureCoordinate;
-
-    The actual range corresponding to a precision qualifier is dependent on
-    the specific OpenGL ES implementation.
-    Using a lower precision might have a positive effect on performance (frame rates) and
-    power efficiency but might also cause a loss in rendering quality.
-    The appropriate trade-off can only be determined by
-    testing different precision configurations.
-----------------------------------------------
-sampler2D:
-
-    (https://www.opengl.org/wiki/Sampler_(GLSL))
-
-    GLSL sampler:        gsampler2D​
-    OpenGL texture enum: GL_TEXTURE_2D
-    Texture type:        2D texture
-
-    A sampler is a set of GLSL variable types.
-    Variables of one of the sampler types must be uniforms or as function parameters.
-    Each sampler in a program represents a single texture of a particular texture type.
-    The type of the sampler corresponds to the type of the texture that can be used by
-    that sampler.
-
-    Sampler types
-    There are a number of sampler types.
-    The various sampler types are separated into 3 categories,
-    based on the basic data type of the Image Format of the texture that they sample from.
-    These are floating-point, signed integer, and unsigned integer.
-    Floating-point also covers normalized integer formats.
-
-    The name of the sampler type in GLSL reflects this grouping.
-    The names are very similar to the names of the vector types in GLSL.
-    Floating-point vectors do not have a prefix; they are just "vec​".
-    Signed integer vectors are "ivec​", and unsigned integer vectors are "uvec​".
-
-    So for samplers, floating-point samplers begin with "sampler​".
-    Signed integer samplers begin with "isampler​",
-    and unsigned integer samplers begin with "usampler​".
-    If you attempt to read from a sampler where the texture's Image Format
-    doesn't match the sampler's basic format
-    (usampler2D with a GL_R8I​, or sampler1D with GL_R8UI​, for example),
-    all reads will produce undefined values.
-
-    Depth-component textures are treated as one-component floating-point textures.
-    Stencil-component textures are treated as one-component unsigned integer textures.
-
-    For the sake of clarity, when you see a g preceding "sampler" in a sampler name,
-    it represents any of the 3 possible prefixes
-    (nothing for float, i for signed integer, and u for unsigned integer).
-----------------------------------------------
-*/
 void main() {
-    vec4 color = texture2D(atlas, texCoord);
+    //tile = 1.0;
 
-    float s = -32.0 * (1.0 / 2048.0);
-    vec2 temp = vec2(uMouse.x/2048.0, uMouse.y/2048.0);
-    // if (texCoord.y < (16.0+uMouse.y)/2048.0 && texCoord.y > (-16.0+uMouse.y)/2048.0 ) {
-    //     //gl_FragColor = texture2D(atlas, texCoord);
-    //     gl_FragColor = texture2D(atlas, vec2(texCoord.x, s+texCoord.y) );
-    // } else {
-    //     gl_FragColor = texture2D(atlas, texCoord);
-    //     //gl_FragColor = vec4(0,0,255,1);        
-    // }
-
+    gl_FragColor = texture2D(atlas, vec2(texCoord.x+uCamera.x/screen.x,texCoord.y+uCamera.y/screen.y));
     //gl_FragColor = texture2D(atlas, texCoord);
-    gl_FragColor = texture2D(atlas, vec2(texCoord.x+uMouse.x/768.0,texCoord.y+uMouse.y/512.0));
-
-/*
-----------------------------------------------
-gl_FragColor:
-
-    Build-in Variable
-    vec4 gl_FragColor - the colour of the fragment.
-
-    gl_FragColor is the principal variable that your fragment shader is designed to change.
-    If your code does not assign a value to it then it is left undefined for the rest of
-    the pipeline.
-
-    (http://relativity.net.au/gaming/glsl/Built-inVariables.html)
-    To work with the OpenGL pipeline the shaders you develop needs a way to
-    recieve from and pass values to the pipeline.
-    To do this GLSL has some predefined variables that you can work with.
-    These variables have gone through many variations with the different version so of GLSL.
-    We will focus on the state of these variables with OpenGL ES 2.0
-----------------------------------------------
-*/
 }
-/*********************************************
-SUMMARY:
-
-*********************************************/
 </script>
 
-<!-- =========================================================== -->
+<!-- ****************************************************************************************** -->
 </head>
 
 <body>

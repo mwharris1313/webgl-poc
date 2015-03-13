@@ -3,10 +3,14 @@
 // ###############################################################################
 var thisFile = 'main.js';
 
-var texArray = [];
-var texCoordBuffer;
+//var texArray = [];
+var screenVertexArray = [];
+
+//var texCoordBuffer;
+var screenVertexBuffer;
+
 var array = [];
-var texture;
+var atlasTexture;
 var buffer;
 var frameBuffer;
 var image;
@@ -14,9 +18,10 @@ var atlas;
 
 // look up where the vertex data needs to go.
 var positionLocation;
-var texCoordLocation;
+var screenVertexLocation;
 var screenLocation;
 var mouseLocation;
+var cameraLocation;
 
 var posX = 0;
 var posY = 0;
@@ -39,63 +44,23 @@ window.onload = function(){
 
 }
 
-// ***********************************************************
-// Set an image's position and dimensions. 
-var setTileTexture = function(col,row,arr){
-    var thisFunc = 'setTileTexture()';
-    dbg.func(thisFile, thisFunc);
-
-    var x1,y1,x2,y2,x,y,tw,th;
-    tw = g.screen.width / g.atlas.width;
-    th = g.screen.height / g.atlas.height;
-    x = 0;
-    y = 0;
-    x1 = x;
-    x2 = x + tw;
-    y1 = y;
-    y2 = y + th;
-
-    arr.push(
-            x1, y1,
-            x2, y1,
-            x1, y2,
-            x1, y2,
-            x2, y1,
-            x2, y2
-    );
-
-}
-
-// ***********************************************************
-// Set an image's position and dimensions. 
-var setTile = function(row,col,arr){
-    var thisFunc = 'setTile()';
-    dbg.func(thisFile, thisFunc);
-
-    var x1,y1,x2,y2,x,y,tw,th;
-    tw = g.screen.width;
-    th = g.screen.height;
-    x = 0;
-    y = 0;
-    x1 = x;
-    x2 = x + tw;
-    y1 = y;
-    y2 = y + th;
-
-    arr.push(
-            x1, y1,
-            x2, y1,
-            x1, y2,
-            x1, y2,
-            x2, y1,
-            x2, y2
-    );
-
-}
-
 // **************************************************************************************************
 function init(){
     var thisFunc = 'init()';
+    dbg.func(thisFile, thisFunc);
+
+    initGL();
+    initEvents();
+    initUniforms();
+    initScreenVertexBuffer();
+    initBuffers();
+
+    window.requestAnimationFrame(render);
+}
+
+// ***********************************************************
+function initGL(){
+    var thisFunc = 'initGL()';
     dbg.func(thisFile, thisFunc);
 
     // -----------------------------------------------------------------
@@ -120,11 +85,17 @@ function init(){
     program = createProgram(gl, [vertexShader, fragmentShader]);
     gl.useProgram(program);
 
+}
+
+// ***********************************************************
+function initEvents(){
+    var thisFunc = 'initEvents()';
+    dbg.func(thisFile, thisFunc);
+
     // -----------------------------------------------------------------
     var xy = mouse.canvasXY(canvas);
     g.canvas.offsetLeft = xy[0];
     g.canvas.offsetTop = xy[1];
-    log(g.canvas.offsetLeft,g.canvas.offsetTop);
 
     // -----------------------------------------------------------------
     //document.addEventListener('keydown',    onkeydown,    false);
@@ -134,12 +105,16 @@ function init(){
     canvas.addEventListener('touchstart', mouse.onTouchStart, false);
     canvas.addEventListener('touchmove', mouse.onTouchMove, false);
 
-    // provide texture coordinates for the rectangle.
-    texCoordBuffer = gl.createBuffer();
+}
+
+// ***********************************************************
+function initUniforms(){
+    var thisFunc = 'initUniforms()';
+    dbg.func(thisFile, thisFunc);
 
     // look up where the vertex data needs to go.
     positionLocation = gl.getAttribLocation(program, "inPosition");
-    texCoordLocation = gl.getAttribLocation(program, "inTexCoord");
+    screenVertexLocation = gl.getAttribLocation(program, "inScreenVertex");
 
     // uniforms
     screenLocation = gl.getUniformLocation(program, "uScreen");
@@ -148,22 +123,86 @@ function init(){
     mouseLocation = gl.getUniformLocation(program, "uMouse");
     gl.uniform2f(mouseLocation, g.mouse.x, g.mouse.y);
 
+    cameraLocation = gl.getUniformLocation(program, "uCamera");
+    gl.uniform2f(cameraLocation, g.camera.x, g.camera.y);
 
-    setTileTexture(1,1,texArray);
+}
 
-    // provide texture coordinates for the rectangle.
-    gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+// ***********************************************************
+function initScreenVertexBuffer(){
+    var thisFunc = 'initBuffers()';
+    dbg.func(thisFile, thisFunc);
+
+    // Set an image's position and dimensions. 
+    var setScreenVertexArray = function(arr){
+        var thisFunc = 'setScreenVertexArray()';
+        dbg.func(thisFile, thisFunc);
+
+        var x1,y1,x2,y2;
+        x1 = 0;
+        x2 = 1;
+        y1 = 0;
+        y2 = 1;
+
+        arr.push(
+                x1, y1,
+                x2, y1,
+                x1, y2,
+                x1, y2,
+                x2, y1,
+                x2, y2
+        );
+
+    }
+
+    setScreenVertexArray(screenVertexArray);
+    screenVertexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, screenVertexBuffer);
     gl.bufferData(
         gl.ARRAY_BUFFER,
-        new Float32Array(texArray),
+        new Float32Array(screenVertexArray),
         gl.STATIC_DRAW
     );
 
-    gl.enableVertexAttribArray(texCoordLocation);
-    gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(screenVertexLocation);
+    gl.vertexAttribPointer(screenVertexLocation, 2, gl.FLOAT, false, 0, 0);
+}
 
-    texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
+// ***********************************************************
+function initBuffers(){
+    var thisFunc = 'initBuffers()';
+    dbg.func(thisFile, thisFunc);
+
+    // Set an image's position and dimensions. 
+    var setTile = function(width,height,arr){
+        var thisFunc = 'setTile()';
+        dbg.func(thisFile, thisFunc);
+
+        var x1,y1,x2,y2,x,y,tw,th,xZoom,yZoom;
+        xZoom = 1;
+        yZoom = 1;
+        tw = xZoom * g.atlas.width;
+        th = yZoom * g.atlas.height;
+        x = 0;
+        y = 0;
+        x1 = x;
+        x2 = x + tw;
+        y1 = y;
+        y2 = y + th;
+
+        arr.push(
+                x1, y1,
+                x2, y1,
+                x1, y2,
+                x1, y2,
+                x2, y1,
+                x2, y2
+        );
+
+    }
+
+    atlasTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
 
     // Set the parameters so we can render any size image.
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -183,14 +222,12 @@ function init(){
         gl.STATIC_DRAW
     );
 
-    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlas); // image into the texture.
 
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.enableVertexAttribArray(positionLocation);
     gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-
-    window.requestAnimationFrame(render);
 
 }
 
@@ -225,7 +262,7 @@ function render() {
         frameBuffer = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
         //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, atlasTexture, 0);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.clearColor(1, 0, 1, 1); // red

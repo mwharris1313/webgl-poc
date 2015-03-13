@@ -16,6 +16,7 @@ canvas {
 <script src="../lib/global.js"></script>
 <script src="../lib/debug.js"></script>
 <script src="../lib/mouse.js"></script>
+<script src="../lib/image.js"></script>
 <script src="../lib/glUtil.js"></script>
 <script src="main.js"></script>
 
@@ -28,12 +29,13 @@ varying vec2 texCoord;          // output qualifier for vertex shader
 uniform vec2 uScreen;           // remains "uniform" per rendering call
 varying vec2 screen;            // output qualifier for vertex shader
 
-//uniform vec2 uMouse;           // remains "uniform" per rendering call
 void main() {
     screen = uScreen;
+    //vec2 mapping = (2.0 * inPosition / screen - 1.0) * vec2(1, -1);
     vec2 mapping = (2.0 * inPosition / screen - 1.0) * vec2(1, -1);
     gl_Position = vec4(mapping, 0, 1);
     texCoord = inScreenVertex;
+    //outColor = vec4(inPosition, 0,1);
 }
 </script>
 
@@ -41,36 +43,24 @@ void main() {
 <script id="FragmentShader" type="Fragment-Shader">
 precision mediump float;
 uniform sampler2D atlasTexture;
+uniform sampler2D tileMapTexture;
 varying vec2 texCoord;     // output qualifier for vertex shader , texCoords from vertex shader
 varying vec2 screen;
 
 uniform vec2 uMouse;     // remains "uniform" per rendering call
 uniform vec2 uCamera;     // remains "uniform" per rendering call
-
-varying float tile;
+uniform float uTile[10];
 
 void main() {
-    //tile = 1.0;
 
-    //gl_FragColor = texture2D(atlasTexture, vec2(texCoord.x+uCamera.x/screen.x,texCoord.y+uCamera.y/screen.y));
-    //gl_FragColor = texture2D(atlas, texCoord);
-    vec2 tc;
+    //gl_FragColor = texture2D( atlasTexture, texCoord);
+    vec4 texAtlas = texture2D( atlasTexture, texCoord);
+    vec4 texBlank = texture2D( tileMapTexture, texCoord * 4.0);
 
-    //0.312, 1.0
-    // x - y*floor(x/y)
-    float fx = 64.0;
-    float fy = 64.0;
-    float x = texCoord.x;
-    float y = texCoord.y;
-    float m = 4.0;
-    float rx = x*fx - m * floor(x*fx/m);
-    float ry = y*fx - m * floor(y*fx/m);
-    tc = vec2 ( rx/fx + uCamera.x/2048.0,ry/fy + uCamera.y/2048.0);
-
-    //tc = vec2(texCoord.x , texCoord.y);
-    gl_FragColor = texture2D( atlasTexture, tc);
-
-
+    gl_FragColor = texBlank + texAtlas;
+    //gl_FragColor = texBlank * texAtlas;
+    //gl_FragColor = texBlank;
+    //gl_FragColor = texAtlas;
 
 }
 </script>

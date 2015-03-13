@@ -5,8 +5,6 @@ var thisFile = 'main.js';
 
 //var texArray = [];
 var screenVertexBuffer, screenVertexArray = [], screenVertexLocation;
-var clearTexture, clearBuffer, clearArray = [], clearTextureLocation;
-var atlasTexture, atlasBuffer, atlasArray = [], atlasTextureLocation;
 var tileMapTexture, tileMapBuffer, tileMapArray = [], tileMapTextureLocation;
 
 var positionLocation;
@@ -114,22 +112,8 @@ function initUniforms(){
     tileLocation = gl.getUniformLocation(program, "uTile");
     gl.uniform1fv(tileLocation, tileArray);
 
-// GLfloat v[10] = {...};
-// glUniform1fv(glGetUniformLocation(program, "v"), 10, v);
-
-    // lookup the sampler locations.
-    atlasTextureLocation = gl.getUniformLocation(program, "atlasTexture");
-    clearTextureLocation = gl.getUniformLocation(program, "clearTexture");
-
-
-
-    gl.uniform1i(clearTextureLocation, 0);  // texture unit 0
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, clearTexture);
-
-    gl.uniform1i(atlasTextureLocation, 2);  // texture unit 2
-    gl.activeTexture(gl.TEXTURE2);
-    gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
+    // GLfloat v[10] = {...};
+    // glUniform1fv(glGetUniformLocation(program, "v"), 10, v);
 
 }
 
@@ -179,141 +163,8 @@ function initTextures(){
     var thisFunc = 'initBuffers()';
     dbg.func(thisFile, thisFunc);
 
-    // Set an image's position and dimensions. 
-    var setTile = function(width,height,arr){
-        var thisFunc = 'setTile()';
-        dbg.func(thisFile, thisFunc);
-
-        var x1,y1,x2,y2,x,y,tw,th,xZoom,yZoom;
-        xZoom = 1;
-        yZoom = 1;
-        tw = xZoom * g.atlas.width;
-        th = yZoom * g.atlas.height;
-        x = 0;
-        y = 0;
-        x1 = x;
-        x2 = x + tw;
-        y1 = y;
-        y2 = y + th;
-
-        arr.push(
-                x1, y1,
-                x2, y1,
-                x1, y2,
-                x1, y2,
-                x2, y1,
-                x2, y2
-        );
-
-    }
-
-
-    // ------------------------------------------------------------------------
-    gl.bindTexture(gl.TEXTURE_2D, null);
-
-
-    clearTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, clearTexture);
-
-
-    // Set the parameters so we can render any size image.
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-    // Create a buffer for the position of the rectangle corners.
-    clearBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, clearBuffer);
-
-    setTile(1,1,clearArray);
-
-    gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Float32Array(clearArray),
-        gl.STATIC_DRAW
-    );
-
-    gl.bindTexture(gl.TEXTURE_2D, clearTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image.img['clear'].file); // image into the texture.
-
-    //gl.bindBuffer(gl.ARRAY_BUFFER, tileMapBuffer);
-    gl.enableVertexAttribArray(positionLocation);
-    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-
-
-    // ------------------------------------------------------------------------
-    atlasTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
-
-
-
-    // Set the parameters so we can render any size image.
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-    // Create a buffer for the position of the rectangle corners.
-    atlasBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, atlasBuffer);
-
-    setTile(1,1,atlasArray);
-
-    gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Float32Array(atlasArray),
-        gl.STATIC_DRAW
-    );
-
-    gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image.img['atlas'].file); // image into the texture.
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, atlasBuffer);
-    gl.enableVertexAttribArray(positionLocation);
-    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-
-
-  // gl.activeTexture(gl.TEXTURE1);
-  // gl.bindTexture(gl.TEXTURE_2D, textures[1]);
-
-
-    // ------------------------------------------------------------------------
- /*
-    gl.activeTexture(gl.TEXTURE2);
-     gl.bindTexture(gl.TEXTURE_2D, clearTexture);
-
-    gl.bindTexture(gl.TEXTURE_2D, null);
-
-
-    clearTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, clearTexture);
-
-    // Set the parameters so we can render any size image.
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-
-    // Create a buffer for the position of the rectangle corners.
-    tileMapBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, tileMapBuffer);
-
-    setTile(1,1,tileMapArray);
-
-    gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Float32Array(tileMapArray),
-        gl.STATIC_DRAW
-    );
-
-    gl.bindTexture(gl.TEXTURE_2D, tileMapTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image.img['blank'].file); // image into the texture.
-
-    //gl.bindBuffer(gl.ARRAY_BUFFER, tileMapBuffer);
-    gl.enableVertexAttribArray(positionLocation);
-    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
-*/
+    image.initTexture('clear', positionLocation); // not sure if positionLocation is even necessary
+    image.initTexture('atlas', positionLocation); // will look into later...
 
 }
 
@@ -339,34 +190,24 @@ function render() {
     // by running render loop multiple times, increasing until it dips below 17ms per frame
     for (var repeat=0; repeat<g.frame.repeat; repeat++){
 
-//    gl.uniform1i(atlasTextureLocation, 0);  // texture unit 0
-//    gl.uniform1i(tileMapTextureLocation, 1);  // texture unit 1
-
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, clearTexture);
-        gl.activeTexture(gl.TEXTURE2);
-        gl.bindTexture(gl.TEXTURE_2D, atlasTexture);
-
+        gl.activeTexture(image.ref['clear'].textureUnit);
+        gl.bindTexture(gl.TEXTURE_2D, image.ref['clear'].texture);
+        gl.activeTexture(image.ref['atlas'].textureUnit);
+        gl.bindTexture(gl.TEXTURE_2D, image.ref['atlas'].texture);
 
         gl.uniform2f(mouseLocation, g.mouse.x, g.mouse.y);
         //gl.uniform2f(cameraLocation, g.mouse.x, g.mouse.y);
 
-
         //gl.bindBuffer(gl.ARRAY_BUFFER, texture);
         //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
-        // Create a framebuffer and attach the texture.
         frameBuffer = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, clearTexture, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['clear'].texture, 0);
         gl.clearColor(0, 1, 1, 1); // green;
         gl.clear(gl.COLOR_BUFFER_BIT);
 
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, atlasTexture, 0);
-
-       // gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
-
-        //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, atlasTexture, 0);
+        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['atlas'].texture, 0);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.clearColor(1, 0, 1, 1); // red

@@ -57,14 +57,10 @@ void main() {
     vec4 texAtlas = texture2D( atlasTexture, texCoord);
     vec4 texClear = texture2D( clearTexture, texCoord);
 
-    //gl_FragColor = texBlank + texAtlas;
-    //gl_FragColor = texBlank;
-    //gl_FragColor = texBlank * texAtlas;
-    //gl_FragColor = texBlank;
+    //gl_FragColor = texClear;
     //gl_FragColor = texAtlas;
 
-    //gl_FragColor = texAtlas;
-    gl_FragColor =   texAtlas / texClear;
+    gl_FragColor =  texAtlas / texClear;
 
 }
 </script>

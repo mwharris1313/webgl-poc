@@ -54,27 +54,35 @@ uniform vec2 uCamera;     // remains "uniform" per rendering call
 uniform float uTile[10];
 uniform float uIsFirst;
 
-uniform vec2 atlasWLLocation;
-uniform vec2 clearWLLocation;
-uniform vec2 editWLLocation;
+uniform vec2 atlasWH;
+uniform vec2 clearWH;
+uniform vec2 editWH;
 
 void main() {
 
-    float tileValue = 12.0;
+    // grab tile to render from atlas , would normally originate from a levelTexture
+    // for a levelTexture, each pixel value corresponds to a tile in the atlas
+    // all the pixels in a levelTexture are the the tiles of the level's tile-map.
+    vec2 tileWH = vec2(32.0, 32.0);
+    float tile = float(65);
+    float tilesPerRow = atlasWH.x / tileWH.x;
+    // vec2 index = vec2(1.0, 2.0);
+    vec2 index = vec2( mod(tile,tilesPerRow), floor(tile/tilesPerRow));
+
+
 
     vec4 clearColor = texture2D( clear, texCoord);
     vec4 editColor = texture2D( edit, texCoord);
     //vec4 atlasColor = texture2D( atlas, texCoord);
 
-    float xScale, yScale, zoom, xZoom, yZoom;
-    zoom = 1.0;
-    xZoom = zoom;
-    yZoom = zoom;
-    xScale = xZoom * screen.x / atlasWLLocation.x;
-    yScale = yZoom * screen.y / atlasWLLocation.y;
-    vec2 atlasCoordTransform = vec2(texCoord.x*xScale,texCoord.y*yScale);
-    vec4 atlasColor = texture2D( atlas, atlasCoordTransform);
+    vec2 zoom = vec2(1,1);
 
+
+    vec2 scale = vec2(zoom.x * screen.x / atlasWH.x, zoom.y * screen.y / atlasWH.y);
+    vec2 offset = vec2(index.x*tileWH.x/atlasWH.x, index.y*tileWH.y/atlasWH.y);
+
+    vec2 atlasCoordTransform = vec2(offset.x + texCoord.x*scale.x, offset.y + texCoord.y*scale.y);
+    vec4 atlasColor = texture2D( atlas, atlasCoordTransform);
 
     //gl_FragColor = texClear;
     //gl_FragColor = texAtlas;

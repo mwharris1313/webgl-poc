@@ -54,13 +54,27 @@ uniform vec2 uCamera;     // remains "uniform" per rendering call
 uniform float uTile[10];
 uniform float uIsFirst;
 
+uniform vec2 atlasWLLocation;
+uniform vec2 clearWLLocation;
+uniform vec2 editWLLocation;
+
 void main() {
 
-    //gl_FragColor = texture2D( atlasTexture, texCoord);
+    float tileValue = 12.0;
 
     vec4 clearColor = texture2D( clear, texCoord);
-    vec4 atlasColor = texture2D( atlas, texCoord);
     vec4 editColor = texture2D( edit, texCoord);
+    //vec4 atlasColor = texture2D( atlas, texCoord);
+
+    float xScale, yScale, zoom, xZoom, yZoom;
+    zoom = 1.0;
+    xZoom = zoom;
+    yZoom = zoom;
+    xScale = xZoom * screen.x / atlasWLLocation.x;
+    yScale = yZoom * screen.y / atlasWLLocation.y;
+    vec2 atlasCoordTransform = vec2(texCoord.x*xScale,texCoord.y*yScale);
+    vec4 atlasColor = texture2D( atlas, atlasCoordTransform);
+
 
     //gl_FragColor = texClear;
     //gl_FragColor = texAtlas;
@@ -94,21 +108,25 @@ void main() {
     // pixels are either fully transparent or fully opaque
     // this fixes atlas ghost weirdness ...
 
-    if (clearColor.w < 1.0) clearColor = vec4(0,0,0,0);
-    if (editColor.w < 1.0) editColor = vec4(0,0,0,0);
-    if (atlasColor.w < 1.0) atlasColor = vec4(0,0,0,0);
+    // if (clearColor.w < 1.0) clearColor = vec4(0,0,0,0);
+    // if (editColor.w < 1.0) editColor = vec4(0,0,0,0);
+    // if (atlasColor.w < 1.0) atlasColor = vec4(0,0,0,0);
 
-    if (atlasColor.xyz != vec3(0,0,0)) {
-        color = atlasColor;
-    } else if (editColor.xyz != vec3(0,0,0)) {
-        color = editColor;
-    } else if (clearColor.xyz != vec3(0,0,0)) {
-        color = clearColor;
-    } else {
-        color = vec4(0.2,0.2,0.2,1);        
-    }
 
-    gl_FragColor =  color;
+    // if (false){ // temporary for debugging , keep everything as else if
+
+    // } else if (editColor.xyz != vec3(0,0,0)) {
+    //     color = editColor;
+    // } else if (atlasColor.xyz != vec3(0,0,0)) {
+    //     color = atlasColor;
+    // } else if (clearColor.xyz != vec3(0,0,0)) {
+    //     color = clearColor;
+
+    // } else {
+    //     color = vec4(0.2,0.2,0.2,1);        
+    // }
+
+    gl_FragColor =  editColor + atlasColor + clearColor;
 
 //    gl_FragColor =  atlasColor;
 

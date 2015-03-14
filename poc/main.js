@@ -55,8 +55,8 @@ function initGL(){
     }
     canvas.addEventListener("webglcontextcreationerror", onContextCreationError, false);
     //gl = canvas.getContext("experimental-webgl");
-    //gl = canvas.getContext("experimental-webgl", {alpha: false});
-    gl = canvas.getContext("experimental-webgl", {premultipliedAlpha: false});
+    gl = canvas.getContext("experimental-webgl", {alpha: false});
+    //gl = canvas.getContext("experimental-webgl", {premultipliedAlpha: false});
 
 
 
@@ -80,12 +80,12 @@ function initGL(){
     // gl.enable(gl.BLEND);
     // gl.disable(gl.DEPTH_TEST);
     //gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-    // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+     // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     //gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
     gl.disable(gl.BLEND);
     gl.enable(gl.DEPTH_TEST);
-
+ gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
 
 }
 
@@ -127,6 +127,13 @@ function initUniforms(){
 
     cameraLocation = gl.getUniformLocation(program, "uCamera");
     gl.uniform2f(cameraLocation, g.camera.x, g.camera.y);
+
+    // overlayWLLocation = gl.getUniformLocation(program, "uOverlayWH");
+    // gl.uniform2f(cameraLocation, image.ref[''].file.width, image.ref[''].file.width);
+    // atlasWLLocation = gl.getUniformLocation(program, "uAtlasWH");
+    // gl.uniform2f(cameraLocation, image.ref['atlas'].file.width, image.ref['atlas'].file.width);
+    // underlayWHLocation = gl.getUniformLocation(program, "uUnderlayWH");
+    // gl.uniform2f(cameraLocation, image.ref[''].file.width, image.ref[''].file.width);
 
 
     var tileArray = [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01];
@@ -229,7 +236,7 @@ function render() {
 // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 // gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-    var tu = gl.TEXTURE0;
+    // var tu = gl.TEXTURE0;
 
 // gl.activeTexture(tu+0);
 // gl.bindTexture(gl.TEXTURE_2D, image.ref['clear'].texture);
@@ -242,13 +249,6 @@ function render() {
 
 
 
-        for (var i=0; i<image.keys.length; i++){
-            if (image.ref[image.keys[i]].textureUnit !== undefined) {
-                gl.activeTexture(image.ref[image.keys[i]].textureUnit);
-                gl.bindTexture(gl.TEXTURE_2D, image.ref[image.keys[i]].texture);
-            }
-        }
-
         // for (var i=0; i<image.keys.length; i++){
         //     if (image.ref[image.keys[i]].textureUnit !== undefined) {
         //         gl.bindTexture(gl.TEXTURE_2D, image.ref[image.keys[i]].texture);
@@ -256,7 +256,12 @@ function render() {
         //     }
         // }
 
-
+        for (var i=0; i<image.keys.length; i++){
+            if (image.ref[image.keys[i]].textureUnit !== undefined) {
+                gl.activeTexture(image.ref[image.keys[i]].textureUnit);
+                gl.bindTexture(gl.TEXTURE_2D, image.ref[image.keys[i]].texture);
+            }
+        }
 
 //image.ref['clear'].texture 
 
@@ -303,11 +308,9 @@ function render() {
 //     this.m_depthComponentTexture, 
 //     0 );
 
-        // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        // gl.clearColor(0, 1, 0, 0.5);
-        // gl.clear(gl.COLOR_BUFFER_BIT);
 
         gl.drawArrays(gl.TRIANGLES, 0, 6);
+
 
 // // Set the backbuffer's alpha to 1.0
 // gl.clearColor(1, 1, 1, 1);

@@ -55,8 +55,8 @@ function initGL(){
     }
     canvas.addEventListener("webglcontextcreationerror", onContextCreationError, false);
     //gl = canvas.getContext("experimental-webgl");
-    gl = canvas.getContext("experimental-webgl", {alpha: false});
-    //gl = canvas.getContext("experimental-webgl", {premultipliedAlpha: false});
+    //gl = canvas.getContext("experimental-webgl", {alpha: false});
+    gl = canvas.getContext("experimental-webgl", {premultipliedAlpha: false});
 
 
 
@@ -79,12 +79,14 @@ function initGL(){
 
     // gl.enable(gl.BLEND);
     // gl.disable(gl.DEPTH_TEST);
-    // gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    //gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
     // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    // gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    //gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
     gl.disable(gl.BLEND);
     gl.enable(gl.DEPTH_TEST);
+
+
 }
 
 // ***********************************************************
@@ -188,9 +190,16 @@ function initTextures(){
 
 //    gl.BlendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
+    // image.initTexture('clear', positionLocation); // not sure if positionLocation is even necessary
+    // image.initTexture('atlas', positionLocation); // will look into later...
+    // image.initTexture('edit', positionLocation); // will look into later...
+
     image.initTexture('clear', positionLocation); // not sure if positionLocation is even necessary
     image.initTexture('atlas', positionLocation); // will look into later...
     image.initTexture('edit', positionLocation); // will look into later...
+
+
+
 
 }
 
@@ -220,6 +229,19 @@ function render() {
 // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 // gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
+    var tu = gl.TEXTURE0;
+
+// gl.activeTexture(tu+0);
+// gl.bindTexture(gl.TEXTURE_2D, image.ref['clear'].texture);
+
+// gl.activeTexture(tu+1);
+// gl.bindTexture(gl.TEXTURE_2D, image.ref['atlas'].texture);
+
+// gl.activeTexture(tu+2);
+// gl.bindTexture(gl.TEXTURE_2D, image.ref['edit'].texture);
+
+
+
         for (var i=0; i<image.keys.length; i++){
             if (image.ref[image.keys[i]].textureUnit !== undefined) {
                 gl.activeTexture(image.ref[image.keys[i]].textureUnit);
@@ -227,6 +249,16 @@ function render() {
             }
         }
 
+        // for (var i=0; i<image.keys.length; i++){
+        //     if (image.ref[image.keys[i]].textureUnit !== undefined) {
+        //         gl.bindTexture(gl.TEXTURE_2D, image.ref[image.keys[i]].texture);
+        //         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image.ref[image.keys[i]].file);
+        //     }
+        // }
+
+
+
+//image.ref['clear'].texture 
 
         // gl.uniform2f(mouseLocation, g.mouse.x, g.mouse.y);
         // if (g.frame.count === 0){
@@ -243,10 +275,11 @@ function render() {
         //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
 
-        frameBuffer = gl.createFramebuffer();
-        gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-        frameBuffer.width = 640;
-        frameBuffer.height = 360;
+
+        // frameBuffer = gl.createFramebuffer();
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+        // frameBuffer.width = 640;
+        // frameBuffer.height = 360;
 
         //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, frameBuffer.width, frameBuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
         //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, frameBuffer.width, frameBuffer.height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
@@ -270,7 +303,7 @@ function render() {
 //     this.m_depthComponentTexture, 
 //     0 );
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        // gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         // gl.clearColor(0, 1, 0, 0.5);
         // gl.clear(gl.COLOR_BUFFER_BIT);
 

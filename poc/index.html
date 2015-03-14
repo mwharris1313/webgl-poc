@@ -64,17 +64,6 @@ void main() {
 
     //gl_FragColor = texClear;
     //gl_FragColor = texAtlas;
-    vec4 color;
-
-    if (editColor != vec4(0,0,0,0)) {
-        color = editColor;
-    } else if (clearColor != vec4(0,0,0,0)) {
-        color = clearColor;
-    } else if (atlasColor != vec4(0,0,0,0)) {
-        color = atlasColor;
-    } else {
-        color = vec4(0.3,0.3,0.3,0.5);
-    }
 
     // if (clearColor != vec4(0,0,0,0)) {
     //     color = clearColor;
@@ -88,8 +77,37 @@ void main() {
 
         // color =  atlasColor + clearColor + editColor ;
 
+// if (clearColor == vec4(0,0,0,0)) color = vec4(1,1,1,1);
 
-    //color = editColor;
+// if (atlasColor != vec4(0,0,0,0)) {
+//     color = atlasColor;
+// } else if (editColor != vec4(0,0,0,0)) {
+//     color = editColor;
+// } else {
+//     color = vec4(0,0,0,0);
+// }
+
+    vec4 color;
+
+    // alpha (0 = fully transparent ,  1 = fully opaque)
+    // if any hint of transparency then treat it fully transparent
+    // pixels are either fully transparent or fully opaque
+    // this fixes atlas ghost weirdness ...
+
+    if (clearColor.w < 1.0) clearColor = vec4(0,0,0,0);
+    if (editColor.w < 1.0) editColor = vec4(0,0,0,0);
+    if (atlasColor.w < 1.0) atlasColor = vec4(0,0,0,0);
+
+    if (atlasColor.xyz != vec3(0,0,0)) {
+        color = atlasColor;
+    } else if (editColor.xyz != vec3(0,0,0)) {
+        color = editColor;
+    } else if (clearColor.xyz != vec3(0,0,0)) {
+        color = clearColor;
+    } else {
+        color = vec4(0.2,0.2,0.2,1);        
+    }
+
     gl_FragColor =  color;
 
 //    gl_FragColor =  atlasColor;

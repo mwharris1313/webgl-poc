@@ -65,12 +65,34 @@ void main() {
     //gl_FragColor = texClear;
     //gl_FragColor = texAtlas;
     vec4 color;
-    if (clearColor != vec4(0,0,0,0)) color = clearColor;
-    if (atlasColor != vec4(0,0,0,0)) color = atlasColor;
-    if (editColor != vec4(0,0,0,0)) color = editColor;
 
+    if (editColor != vec4(0,0,0,0)) {
+        color = editColor;
+    } else if (clearColor != vec4(0,0,0,0)) {
+        color = clearColor;
+    } else if (atlasColor != vec4(0,0,0,0)) {
+        color = atlasColor;
+    } else {
+        color = vec4(0.3,0.3,0.3,0.5);
+    }
+
+    // if (clearColor != vec4(0,0,0,0)) {
+    //     color = clearColor;
+    // } else if (atlasColor != vec4(0,0,0,0)) {
+    //     color = atlasColor;
+    // } else if (editColor != vec4(0,0,0,0)) {
+    //     color = editColor;
+    // } else {
+    //     color = vec4(1,0,1,0.75);
+    // }
+
+        // color =  atlasColor + clearColor + editColor ;
+
+
+    //color = editColor;
     gl_FragColor =  color;
 
+//    gl_FragColor =  atlasColor;
 
 }
 </script>

@@ -54,8 +54,8 @@ function initGL(){
         errorStatus = e.statusMessage || "Unknown";
     }
     canvas.addEventListener("webglcontextcreationerror", onContextCreationError, false);
-    gl = canvas.getContext("experimental-webgl");
-    //gl = canvas.getContext("experimental-webgl", {alpha: false});
+    //gl = canvas.getContext("experimental-webgl");
+    gl = canvas.getContext("experimental-webgl", {alpha: false});
     //gl = canvas.getContext("experimental-webgl", {premultipliedAlpha: false});
 
 
@@ -65,13 +65,26 @@ function initGL(){
 
     canvas.width = g.screen.width;
     canvas.height = g.screen.height;
-    gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+    //gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+    gl.viewport(0, 0, canvas.width, canvas.height);
 
     var vertexShader = createShaderEmbedded(gl, "VertexShader");
     var fragmentShader = createShaderEmbedded(gl, "FragmentShader");
     program = createProgram(gl, [vertexShader, fragmentShader]);
     gl.useProgram(program);
 
+    // gl.enable(gl.DEPTH_TEST);
+    // gl.depthFunc(gl.LESS);
+
+
+    // gl.enable(gl.BLEND);
+    // gl.disable(gl.DEPTH_TEST);
+    // gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+    // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    // gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
+    gl.disable(gl.BLEND);
+    gl.enable(gl.DEPTH_TEST);
 }
 
 // ***********************************************************
@@ -173,6 +186,8 @@ function initTextures(){
     var thisFunc = 'initBuffers()';
     dbg.func(thisFile, thisFunc);
 
+//    gl.BlendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
     image.initTexture('clear', positionLocation); // not sure if positionLocation is even necessary
     image.initTexture('atlas', positionLocation); // will look into later...
     image.initTexture('edit', positionLocation); // will look into later...
@@ -195,16 +210,16 @@ function render() {
 
     requestAnimationFrame(render);
 
-    
     dbg.msPerFrame(thisFile, thisFunc);
 
     // can't find a way to disable vsync,
     // only way to gauge performance in efficient performance scenarios (beyond 60fps)
     // by running render loop multiple times, increasing until it dips below 17ms per frame
     for (var repeat=0; repeat<g.frame.repeat; repeat++){
-gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+// gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+// gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+// gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
         for (var i=0; i<image.keys.length; i++){
             if (image.ref[image.keys[i]].textureUnit !== undefined) {
                 gl.activeTexture(image.ref[image.keys[i]].textureUnit);
@@ -213,29 +228,58 @@ gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
         }
 
 
-        gl.uniform2f(mouseLocation, g.mouse.x, g.mouse.y);
-        if (g.frame.count === 0){
-            gl.uniform1f(isFirstLocation, 0.0);
-            g.frame.count++;
-        } else {
-            gl.uniform1f(isFirstLocation, 1.0);
-        }
+        // gl.uniform2f(mouseLocation, g.mouse.x, g.mouse.y);
+        // if (g.frame.count === 0){
+        //     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['clear'].texture, 0);
+        //     gl.uniform1f(isFirstLocation, 0.0);
+        //     g.frame.count++;
+        // } else {
+        //     gl.uniform1f(isFirstLocation, 1.0);
+        // }
 
         //gl.uniform2f(cameraLocation, g.mouse.x, g.mouse.y);
 
         //gl.bindBuffer(gl.ARRAY_BUFFER, texture);
         //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
+
         frameBuffer = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-        //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['clear'].texture, 0);
-        gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['clear'].texture, 0);
-        gl.clearColor(0, 1, 1, 1); // green;
-        gl.clear(gl.COLOR_BUFFER_BIT);
+        frameBuffer.width = 640;
+        frameBuffer.height = 360;
 
+        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, frameBuffer.width, frameBuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, frameBuffer.width, frameBuffer.height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+
+        //gl.viewport(0, 0, canvas.width, canvas.height);
+
+        //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['clear'].texture, 0);
+        //gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['clear'].texture, 0,1);
+
+        // Render to the texture (using clear because it's simple)
+
+        //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, image.ref['atlas'].texture, 0);
+        //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['clear'].texture, 0);
+        //gl.clearColor(1, 1, 1, 1); // green;
+        //gl.clear(gl.COLOR_BUFFER_BIT);
+
+// gl.framebufferTexture2D( 
+//     gl.FRAMEBUFFER,
+//     gl.DEPTH_ATTACHMENT, 
+//     gl.TEXTURE_2D, 
+//     this.m_depthComponentTexture, 
+//     0 );
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        // gl.clearColor(0, 1, 0, 0.5);
+        // gl.clear(gl.COLOR_BUFFER_BIT);
 
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+// // Set the backbuffer's alpha to 1.0
+// gl.clearColor(1, 1, 1, 1);
+// gl.colorMask(false, false, false, true);
+// gl.clear(gl.COLOR_BUFFER_BIT);
 
         // for (var i=0; i<image.keys.length; i++){
         //     if (image.ref[image.keys[i]].textureUnit !== undefined) {
@@ -247,15 +291,18 @@ gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
         //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['atlas'].texture, 0);
 
-
         //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['edit'].texture, 0);
-        gl.drawArrays(gl.TRIANGLES, 0, 6);
 
         // // Set the backbuffer's alpha to 1.0
         // gl.clearColor(1, 1, 1, 1);
         // gl.colorMask(false, false, false, true);
         // gl.clear(gl.COLOR_BUFFER_BIT);
 
+
+        // // Set the backbuffer's alpha to 1.0
+        // gl.clearColor(1, 1, 1, 1);
+        // gl.colorMask(false, false, false, true);
+        // gl.clear(gl.COLOR_BUFFER_BIT);
 
 
         // -----------------------------------------------------------------

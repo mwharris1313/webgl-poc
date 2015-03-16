@@ -78,7 +78,7 @@ vec2 getTileIndex(int tileNumber) {
 
 // *************************************************************************
 // transform texture so it matches screen size pixel-to-pixel
-vec4 layerTransform(sampler2D layer, vec2 layerWH, int tileNumber){
+vec4 layerTransform(sampler2D layer, vec2 tCoord, vec2 layerWH, int tileNumber){
 
     vec2  tileWH, index, scale, offset;
     tileWH = vec2(32.0, 32.0);
@@ -104,55 +104,68 @@ void main() {
     layer2Color = texture2D( layer2, texCoord);
     layer3Color = texture2D( layer3, texCoord);
     layer4Color = texture2D( layer4, texCoord);
-    layer5Color = layerTransform(layer5, layer5WH,0);
-    layer6Color = layerTransform(layer6, layer6WH,0);
-    layer7Color = layerTransform(layer7, layer7WH,0);
+    layer5Color = layerTransform(layer5, texCoord, layer5WH,0);
+    layer6Color = layerTransform(layer6, texCoord, layer6WH,0);
+    layer7Color = layerTransform(layer7, texCoord, layer7WH*32.0,0);
 
     // -------------------------------------------------------------------------
     bool isBlend = false;
+
     vec4 color;
+    //if(layer7Color.x == 1.0){
+    if(layer7Color.x == 1.0){
+        //color = layer7Color;
+        //color = layer7Color;
 
-    if (isBlend) {
+        if (isBlend) {
 
-        //color =  layer0Color+layer1Color+layer2Color+layer3Color+layer4Color+layer5Color+layer6Color+layer7Color;
-        color =  layer0Color+layer1Color+layer2Color+layer3Color+layer4Color+layer7Color;
-
-    } else {
-
-        // alpha (0 = fully transparent ,  1 = fully opaque)
-        // if any hint of transparency then treat it fully transparent
-        // pixels are either fully transparent or fully opaque
-        // this fixes atlas ghost weirdness ...
-
-        // if (layer0Color.w < 1.0) layer0Color = vec4(0,0,0,0);
-        // if (layer1Color.w < 1.0) layer1Color = vec4(0,0,0,0);
-        // if (layer2Color.w < 1.0) layer2Color = vec4(0,0,0,0);
-
-
-        if (false){ // temporary for debugging , keep everything as else if
-
-        } else if (layer7Color.xyz != vec3(0,0,0)) {
-            color = layer7Color;
-        } else if (layer6Color.xyz != vec3(0,0,0)) {
-            color = layer6Color;
-        // } else if (layer5Color.xyz != vec3(0,0,0)) {
-        //     color = layer5Color;
-        } else if (layer4Color.xyz != vec3(0,0,0)) {
-            color = layer4Color;
-        } else if (layer3Color.xyz != vec3(0,0,0)) {
-            color = layer3Color;
-        } else if (layer2Color.xyz != vec3(0,0,0)) {
-            color = layer2Color;
-        } else if (layer1Color.xyz != vec3(0,0,0)) {
-            color = layer1Color;
-        } else if (layer0Color.xyz != vec3(0,0,0)) {
-            color = layer0Color;
+            //color =  layer0Color+layer1Color+layer2Color+layer3Color+layer4Color+layer5Color+layer6Color+layer7Color;
+            //color =  layer0Color+layer1Color+layer2Color+layer3Color+layer4Color+layer7Color;
+            color =  layer0Color+layer1Color+layer2Color+layer3Color+layer4Color;
 
         } else {
-            color = vec4(0.2,0.2,0.2,1);        
+
+            // alpha (0 = fully transparent ,  1 = fully opaque)
+            // if any hint of transparency then treat it fully transparent
+            // pixels are either fully transparent or fully opaque
+            // this fixes atlas ghost weirdness ...
+
+            // if (layer0Color.w < 1.0) layer0Color = vec4(0,0,0,0);
+            // if (layer1Color.w < 1.0) layer1Color = vec4(0,0,0,0);
+            // if (layer2Color.w < 1.0) layer2Color = vec4(0,0,0,0);
+
+
+            if (false){ // temporary for debugging , keep everything as else if
+
+            // } else if (layer7Color.xyz != vec3(0,0,0)) {
+            //     color = layer7Color;
+            } else if (layer6Color.xyz != vec3(0,0,0)) {
+                color = layer6Color;
+            // } else if (layer5Color.xyz != vec3(0,0,0)) {
+            //     color = layer5Color;
+            } else if (layer4Color.xyz != vec3(0,0,0)) {
+                color = layer4Color;
+            } else if (layer3Color.xyz != vec3(0,0,0)) {
+                color = layer3Color;
+            } else if (layer2Color.xyz != vec3(0,0,0)) {
+                color = layer2Color;
+            } else if (layer1Color.xyz != vec3(0,0,0)) {
+                color = layer1Color;
+            } else if (layer0Color.xyz != vec3(0,0,0)) {
+                color = layer0Color;
+
+            } else {
+                color = vec4(0.2,0.2,0.2,1);        
+            }
+
         }
 
+
+    } else {
+        color = vec4(0,0,0,0);
     }
+
+
 
     // -------------------------------------------------------------------------
     gl_FragColor =  color;

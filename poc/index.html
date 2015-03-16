@@ -20,15 +20,12 @@ canvas {
 <script src="../lib/glUtil.js"></script>
 <script src="main.js"></script>
 
-<!-- ****************************************************************************************** -->
 <script id="VertexShader" type="Vertex-Shader">
 attribute vec2 inPosition;      // input qualifier for vertex shader , different for each invocation
 attribute vec2 inScreenVertex;  // input qualifier for vertex shader , of program stage
 varying vec2 texCoord;          // output qualifier for vertex shader
-
 uniform vec2 uScreen;           // remains "uniform" per rendering call
 varying vec2 screen;            // output qualifier for vertex shader
-
 void main() {
     screen = uScreen;
     //vec2 mapping = (2.0 * inPosition / screen - 1.0) * vec2(1, -1);
@@ -38,7 +35,6 @@ void main() {
     //outColor = vec4(inPosition, 0,1);
 }
 </script>
-
 <!-- ****************************************************************************************** -->
 <script id="FragmentShader" type="Fragment-Shader">
 precision mediump float;
@@ -75,27 +71,31 @@ float timesTwo(float number) {
 }
 
 // *************************************************************************
-//float timesTwo(float number);
-float getTile(float x, float y) {
-    return x * y;
+// get the tile's index from tile's number in atlas, return as vec2(col, row) starts at vec(0,0)
+vec2 getTileIndex(int tileNumber) {
+    return vec2( mod(float(tileNumber),16.0), floor(float(tileNumber)/16.0) ); // 16 tiles per row
 }
 
 // *************************************************************************
+// transform texture so it matches screen size pixel-to-pixel
+vec4 atlasLayerTransform(sampler2D layer, vec2 layerWH){
+
+    vec2  tileWH, index, zoom, scale, offset;
+    tileWH = vec2(32.0, 32.0);
+    index = getTileIndex(64);
+    zoom = vec2(1,1);
+    scale = vec2(zoom.x * screen.x / layerWH.x, zoom.y * screen.y / layerWH.y);
+    offset = vec2(index.x*tileWH.x/layerWH.x, index.y*tileWH.y/layerWH.y);
+    return texture2D( layer5, vec2(offset.x + texCoord.x*scale.x, offset.y + texCoord.y*scale.y) );
+}
+
+// ###########################################################################################
 void main() {
 
     // grab tile to render from atlas , would normally originate from a levelTexture
     // for a levelTexture, each pixel value corresponds to a tile in the atlas
     // all the pixels in a levelTexture are the the tiles of the level's tile-map.
-    vec2 tileWH = vec2(32.0, 32.0);
-    //float tile = float(130);
-    float tile = float(getTile(2.0,3.0));
-    float tilesPerRow = layer1WH.x / tileWH.x;
-    // vec2 index = vec2(1.0, 2.0);
-    vec2 index = vec2( mod(tile,tilesPerRow), floor(tile/tilesPerRow));
-
-//    vec4 layer0Color = texture2D( layer0, texCoord);
-//    vec4 layer1Color = texture2D( layer1, texCoord);
-//    vec4 layer2Color = texture2D( layer2, texCoord);
+    vec2 index = getTileIndex(64);
 
     // -------------------------------------------------------------------------
     vec4 layer0Color, layer1Color, layer2Color, layer3Color,layer4Color, layer5Color, layer6Color, layer7Color;
@@ -105,20 +105,8 @@ void main() {
     layer2Color = texture2D( layer2, texCoord);
     layer3Color = texture2D( layer3, texCoord);
     layer4Color = texture2D( layer4, texCoord);
-
-    vec2 zoom, scale, offset, layerWH;
-    zoom = vec2(1,1);
-
-    layerWH = layer5WH;
-    scale = vec2(zoom.x * screen.x / layerWH.x, zoom.y * screen.y / layerWH.y);
-    offset = vec2(index.x*tileWH.x/layerWH.x, index.y*tileWH.y/layerWH.y);
-    layer5Color = texture2D( layer5, vec2(offset.x + texCoord.x*scale.x, offset.y + texCoord.y*scale.y) );
-
-    layerWH = layer6WH;
-    scale = vec2(zoom.x * screen.x / layerWH.x, zoom.y * screen.y / layerWH.y);
-    offset = vec2(index.x*tileWH.x/layerWH.x, index.y*tileWH.y/layerWH.y);
-    layer6Color = texture2D( layer6, vec2(offset.x + texCoord.x*scale.x, offset.y + texCoord.y*scale.y) );
-
+    layer5Color = atlasLayerTransform(layer5, layer5WH);
+    layer6Color = atlasLayerTransform(layer6, layer6WH);
     layer7Color = texture2D( layer7, texCoord);
 
     // -------------------------------------------------------------------------
@@ -136,9 +124,9 @@ void main() {
         // pixels are either fully transparent or fully opaque
         // this fixes atlas ghost weirdness ...
 
-        if (layer0Color.w < 1.0) layer0Color = vec4(0,0,0,0);
-        if (layer1Color.w < 1.0) layer1Color = vec4(0,0,0,0);
-        if (layer2Color.w < 1.0) layer2Color = vec4(0,0,0,0);
+        // if (layer0Color.w < 1.0) layer0Color = vec4(0,0,0,0);
+        // if (layer1Color.w < 1.0) layer1Color = vec4(0,0,0,0);
+        // if (layer2Color.w < 1.0) layer2Color = vec4(0,0,0,0);
 
 
         if (false){ // temporary for debugging , keep everything as else if
@@ -172,11 +160,9 @@ void main() {
 
 
 }
-// *************************************************************************
+// ###########################################################################################
 
 </script>
-
-<!-- ****************************************************************************************** -->
 </head>
 
 <body>

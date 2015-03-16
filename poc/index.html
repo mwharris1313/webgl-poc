@@ -78,15 +78,14 @@ vec2 getTileIndex(int tileNumber) {
 
 // *************************************************************************
 // transform texture so it matches screen size pixel-to-pixel
-vec4 atlasLayerTransform(sampler2D layer, vec2 layerWH){
+vec4 layerTransform(sampler2D layer, vec2 layerWH, int tileNumber){
 
-    vec2  tileWH, index, zoom, scale, offset;
+    vec2  tileWH, index, scale, offset;
     tileWH = vec2(32.0, 32.0);
-    index = getTileIndex(64);
-    zoom = vec2(1,1);
-    scale = vec2(zoom.x * screen.x / layerWH.x, zoom.y * screen.y / layerWH.y);
+    index = getTileIndex(tileNumber);
+    scale = vec2(screen.x / layerWH.x, screen.y / layerWH.y);
     offset = vec2(index.x*tileWH.x/layerWH.x, index.y*tileWH.y/layerWH.y);
-    return texture2D( layer5, vec2(offset.x + texCoord.x*scale.x, offset.y + texCoord.y*scale.y) );
+    return texture2D( layer, vec2(offset.x + texCoord.x*scale.x, offset.y + texCoord.y*scale.y) );
 }
 
 // ###########################################################################################
@@ -95,7 +94,7 @@ void main() {
     // grab tile to render from atlas , would normally originate from a levelTexture
     // for a levelTexture, each pixel value corresponds to a tile in the atlas
     // all the pixels in a levelTexture are the the tiles of the level's tile-map.
-    vec2 index = getTileIndex(64);
+    //vec2 index = getTileIndex(12);
 
     // -------------------------------------------------------------------------
     vec4 layer0Color, layer1Color, layer2Color, layer3Color,layer4Color, layer5Color, layer6Color, layer7Color;
@@ -105,9 +104,9 @@ void main() {
     layer2Color = texture2D( layer2, texCoord);
     layer3Color = texture2D( layer3, texCoord);
     layer4Color = texture2D( layer4, texCoord);
-    layer5Color = atlasLayerTransform(layer5, layer5WH);
-    layer6Color = atlasLayerTransform(layer6, layer6WH);
-    layer7Color = texture2D( layer7, texCoord);
+    layer5Color = layerTransform(layer5, layer5WH,0);
+    layer6Color = layerTransform(layer6, layer6WH,0);
+    layer7Color = layerTransform(layer7, layer7WH,0);
 
     // -------------------------------------------------------------------------
     bool isBlend = false;
@@ -115,7 +114,8 @@ void main() {
 
     if (isBlend) {
 
-        color =  layer0Color+layer1Color+layer2Color+layer3Color+layer4Color+layer5Color+layer6Color+layer7Color;
+        //color =  layer0Color+layer1Color+layer2Color+layer3Color+layer4Color+layer5Color+layer6Color+layer7Color;
+        color =  layer0Color+layer1Color+layer2Color+layer3Color+layer4Color+layer7Color;
 
     } else {
 
@@ -135,8 +135,8 @@ void main() {
             color = layer7Color;
         } else if (layer6Color.xyz != vec3(0,0,0)) {
             color = layer6Color;
-        } else if (layer5Color.xyz != vec3(0,0,0)) {
-            color = layer5Color;
+        // } else if (layer5Color.xyz != vec3(0,0,0)) {
+        //     color = layer5Color;
         } else if (layer4Color.xyz != vec3(0,0,0)) {
             color = layer4Color;
         } else if (layer3Color.xyz != vec3(0,0,0)) {

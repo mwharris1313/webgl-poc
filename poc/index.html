@@ -42,9 +42,14 @@ void main() {
 <!-- ****************************************************************************************** -->
 <script id="FragmentShader" type="Fragment-Shader">
 precision mediump float;
-uniform sampler2D clear;
-uniform sampler2D atlas;
-uniform sampler2D edit;
+uniform sampler2D layer0;
+uniform sampler2D layer1;
+uniform sampler2D layer2;
+uniform sampler2D layer3;
+uniform sampler2D layer4;
+uniform sampler2D layer5;
+uniform sampler2D layer6;
+uniform sampler2D layer7;
 
 varying vec2 texCoord;     // output qualifier for vertex shader , texCoords from vertex shader
 varying vec2 screen;
@@ -54,91 +59,121 @@ uniform vec2 uCamera;     // remains "uniform" per rendering call
 uniform float uTile[10];
 uniform float uIsFirst;
 
-uniform vec2 atlasWH;
-uniform vec2 clearWH;
-uniform vec2 editWH;
+uniform vec2 layer0WH;
+uniform vec2 layer1WH;
+uniform vec2 layer2WH;
+uniform vec2 layer3WH;
+uniform vec2 layer4WH;
+uniform vec2 layer5WH;
+uniform vec2 layer6WH;
+uniform vec2 layer7WH;
 
+// *************************************************************************
+//float timesTwo(float number);
+float timesTwo(float number) {
+    return number * 2.0;
+}
+
+// *************************************************************************
+//float timesTwo(float number);
+float getTile(float x, float y) {
+    return x * y;
+}
+
+// *************************************************************************
 void main() {
 
     // grab tile to render from atlas , would normally originate from a levelTexture
     // for a levelTexture, each pixel value corresponds to a tile in the atlas
     // all the pixels in a levelTexture are the the tiles of the level's tile-map.
     vec2 tileWH = vec2(32.0, 32.0);
-    float tile = float(65);
-    float tilesPerRow = atlasWH.x / tileWH.x;
+    //float tile = float(130);
+    float tile = float(getTile(2.0,3.0));
+    float tilesPerRow = layer1WH.x / tileWH.x;
     // vec2 index = vec2(1.0, 2.0);
     vec2 index = vec2( mod(tile,tilesPerRow), floor(tile/tilesPerRow));
 
+//    vec4 layer0Color = texture2D( layer0, texCoord);
+//    vec4 layer1Color = texture2D( layer1, texCoord);
+//    vec4 layer2Color = texture2D( layer2, texCoord);
 
+    // -------------------------------------------------------------------------
+    vec4 layer0Color, layer1Color, layer2Color, layer3Color,layer4Color, layer5Color, layer6Color, layer7Color;
 
-    vec4 clearColor = texture2D( clear, texCoord);
-    vec4 editColor = texture2D( edit, texCoord);
-    //vec4 atlasColor = texture2D( atlas, texCoord);
+    layer0Color = texture2D( layer0, texCoord);
+    layer1Color = texture2D( layer1, texCoord);
+    layer2Color = texture2D( layer2, texCoord);
+    layer3Color = texture2D( layer3, texCoord);
+    layer4Color = texture2D( layer4, texCoord);
 
-    vec2 zoom = vec2(1,1);
+    vec2 zoom, scale, offset, layerWH;
+    zoom = vec2(1,1);
 
+    layerWH = layer5WH;
+    scale = vec2(zoom.x * screen.x / layerWH.x, zoom.y * screen.y / layerWH.y);
+    offset = vec2(index.x*tileWH.x/layerWH.x, index.y*tileWH.y/layerWH.y);
+    layer5Color = texture2D( layer5, vec2(offset.x + texCoord.x*scale.x, offset.y + texCoord.y*scale.y) );
 
-    vec2 scale = vec2(zoom.x * screen.x / atlasWH.x, zoom.y * screen.y / atlasWH.y);
-    vec2 offset = vec2(index.x*tileWH.x/atlasWH.x, index.y*tileWH.y/atlasWH.y);
+    layerWH = layer6WH;
+    scale = vec2(zoom.x * screen.x / layerWH.x, zoom.y * screen.y / layerWH.y);
+    offset = vec2(index.x*tileWH.x/layerWH.x, index.y*tileWH.y/layerWH.y);
+    layer6Color = texture2D( layer6, vec2(offset.x + texCoord.x*scale.x, offset.y + texCoord.y*scale.y) );
 
-    vec2 atlasCoordTransform = vec2(offset.x + texCoord.x*scale.x, offset.y + texCoord.y*scale.y);
-    vec4 atlasColor = texture2D( atlas, atlasCoordTransform);
+    layer7Color = texture2D( layer7, texCoord);
 
-    //gl_FragColor = texClear;
-    //gl_FragColor = texAtlas;
-
-    // if (clearColor != vec4(0,0,0,0)) {
-    //     color = clearColor;
-    // } else if (atlasColor != vec4(0,0,0,0)) {
-    //     color = atlasColor;
-    // } else if (editColor != vec4(0,0,0,0)) {
-    //     color = editColor;
-    // } else {
-    //     color = vec4(1,0,1,0.75);
-    // }
-
-        // color =  atlasColor + clearColor + editColor ;
-
-// if (clearColor == vec4(0,0,0,0)) color = vec4(1,1,1,1);
-
-// if (atlasColor != vec4(0,0,0,0)) {
-//     color = atlasColor;
-// } else if (editColor != vec4(0,0,0,0)) {
-//     color = editColor;
-// } else {
-//     color = vec4(0,0,0,0);
-// }
-
+    // -------------------------------------------------------------------------
+    bool isBlend = false;
     vec4 color;
 
-    // alpha (0 = fully transparent ,  1 = fully opaque)
-    // if any hint of transparency then treat it fully transparent
-    // pixels are either fully transparent or fully opaque
-    // this fixes atlas ghost weirdness ...
+    if (isBlend) {
 
-    // if (clearColor.w < 1.0) clearColor = vec4(0,0,0,0);
-    // if (editColor.w < 1.0) editColor = vec4(0,0,0,0);
-    // if (atlasColor.w < 1.0) atlasColor = vec4(0,0,0,0);
+        color =  layer0Color+layer1Color+layer2Color+layer3Color+layer4Color+layer5Color+layer6Color+layer7Color;
+
+    } else {
+
+        // alpha (0 = fully transparent ,  1 = fully opaque)
+        // if any hint of transparency then treat it fully transparent
+        // pixels are either fully transparent or fully opaque
+        // this fixes atlas ghost weirdness ...
+
+        if (layer0Color.w < 1.0) layer0Color = vec4(0,0,0,0);
+        if (layer1Color.w < 1.0) layer1Color = vec4(0,0,0,0);
+        if (layer2Color.w < 1.0) layer2Color = vec4(0,0,0,0);
 
 
-    // if (false){ // temporary for debugging , keep everything as else if
+        if (false){ // temporary for debugging , keep everything as else if
 
-    // } else if (editColor.xyz != vec3(0,0,0)) {
-    //     color = editColor;
-    // } else if (atlasColor.xyz != vec3(0,0,0)) {
-    //     color = atlasColor;
-    // } else if (clearColor.xyz != vec3(0,0,0)) {
-    //     color = clearColor;
+        } else if (layer7Color.xyz != vec3(0,0,0)) {
+            color = layer7Color;
+        } else if (layer6Color.xyz != vec3(0,0,0)) {
+            color = layer6Color;
+        } else if (layer5Color.xyz != vec3(0,0,0)) {
+            color = layer5Color;
+        } else if (layer4Color.xyz != vec3(0,0,0)) {
+            color = layer4Color;
+        } else if (layer3Color.xyz != vec3(0,0,0)) {
+            color = layer3Color;
+        } else if (layer2Color.xyz != vec3(0,0,0)) {
+            color = layer2Color;
+        } else if (layer1Color.xyz != vec3(0,0,0)) {
+            color = layer1Color;
+        } else if (layer0Color.xyz != vec3(0,0,0)) {
+            color = layer0Color;
 
-    // } else {
-    //     color = vec4(0.2,0.2,0.2,1);        
-    // }
+        } else {
+            color = vec4(0.2,0.2,0.2,1);        
+        }
 
-    gl_FragColor =  editColor + atlasColor + clearColor;
+    }
 
-//    gl_FragColor =  atlasColor;
+    // -------------------------------------------------------------------------
+    gl_FragColor =  color;
+    // -------------------------------------------------------------------------
+
 
 }
+// *************************************************************************
+
 </script>
 
 <!-- ****************************************************************************************** -->

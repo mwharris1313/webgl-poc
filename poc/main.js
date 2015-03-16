@@ -58,9 +58,6 @@ function initGL(){
     gl = canvas.getContext("experimental-webgl", {alpha: false});
     //gl = canvas.getContext("experimental-webgl", {premultipliedAlpha: false});
 
-
-
-//{premultipliedAlpha: false}
     if(!gl) alert("ERROR: WebGL Context Not Created : " + errorStatus);
 
     canvas.width = g.screen.width;
@@ -73,19 +70,18 @@ function initGL(){
     program = createProgram(gl, [vertexShader, fragmentShader]);
     gl.useProgram(program);
 
-    // gl.enable(gl.DEPTH_TEST);
-    // gl.depthFunc(gl.LESS);
+    //gl.enable(gl.DEPTH_TEST);
+    //gl.depthFunc(gl.LESS);
 
-
-    // gl.enable(gl.BLEND);
-    // gl.disable(gl.DEPTH_TEST);
+    //gl.enable(gl.BLEND);
+    //gl.disable(gl.DEPTH_TEST);
     //gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-     // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    //gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     //gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
     gl.disable(gl.BLEND);
     gl.enable(gl.DEPTH_TEST);
- gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
+    gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
 
 }
 
@@ -127,14 +123,6 @@ function initUniforms(){
 
     cameraLocation = gl.getUniformLocation(program, "uCamera");
     gl.uniform2f(cameraLocation, g.camera.x, g.camera.y);
-
-    // overlayWLLocation = gl.getUniformLocation(program, "uOverlayWH");
-    // gl.uniform2f(cameraLocation, image.ref[''].file.width, image.ref[''].file.width);
-    // atlasWLLocation = gl.getUniformLocation(program, "uAtlasWH");
-    // gl.uniform2f(cameraLocation, image.ref['atlas'].file.width, image.ref['atlas'].file.width);
-    // underlayWHLocation = gl.getUniformLocation(program, "uUnderlayWH");
-    // gl.uniform2f(cameraLocation, image.ref[''].file.width, image.ref[''].file.width);
-
 
     var tileArray = [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01];
 
@@ -195,27 +183,21 @@ function initTextures(){
     var thisFunc = 'initBuffers()';
     dbg.func(thisFile, thisFunc);
 
-//    gl.BlendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    for (var i=0; i<8; i++) {
+        image.initTexture(i, positionLocation);
+    }
 
-    // image.initTexture('clear', positionLocation); // not sure if positionLocation is even necessary
-    // image.initTexture('atlas', positionLocation); // will look into later...
-    // image.initTexture('edit', positionLocation); // will look into later...
-
-    image.initTexture('clear', positionLocation); // not sure if positionLocation is even necessary
-    image.initTexture('atlas', positionLocation); // will look into later...
-    image.initTexture('edit', positionLocation); // will look into later...
-
-
-
+    // Eight texture layers, layers 0-7
+    // 0:R "value", background    usually for terrain ,or background parallax if layer 1 is used for terrain 
+    // 1:G underlay      usually for terrain
+    // 2:B foreground    usually for players and mobs or active objects are drawn
+    // 3:A overlay       usually for translucent clouds drawn (when in overhead perspective)
+    // 4: 
+    // 5: tile atlas B  can be used for player/mob animations/spritesheets or dynamic tiles
+    // 6: tile atlas A  can be used for terrain and static tiles
+    // 7: tile map level (256px x 256px), RBGA pixel stores 4 layers, 1 tile per byte (256 tiles in a tile atlas)
 
 }
-
-// ***********************************************************
-/*
-    Source for further research on Render-To-Texture:
-    (http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-14-render-to-texture/)
-    (http://stackoverflow.com/questions/16287481/webgl-display-framebuffer)
-*/
 
 // **************************************************************************************************
 // **************************************************************************************************
@@ -232,38 +214,10 @@ function render() {
     // only way to gauge performance in efficient performance scenarios (beyond 60fps)
     // by running render loop multiple times, increasing until it dips below 17ms per frame
     for (var repeat=0; repeat<g.frame.repeat; repeat++){
-// gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
-// gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-// gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
-    // var tu = gl.TEXTURE0;
-
-// gl.activeTexture(tu+0);
-// gl.bindTexture(gl.TEXTURE_2D, image.ref['clear'].texture);
-
-// gl.activeTexture(tu+1);
-// gl.bindTexture(gl.TEXTURE_2D, image.ref['atlas'].texture);
-
-// gl.activeTexture(tu+2);
-// gl.bindTexture(gl.TEXTURE_2D, image.ref['edit'].texture);
-
-
-
-        // for (var i=0; i<image.keys.length; i++){
-        //     if (image.ref[image.keys[i]].textureUnit !== undefined) {
-        //         gl.bindTexture(gl.TEXTURE_2D, image.ref[image.keys[i]].texture);
-        //         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image.ref[image.keys[i]].file);
-        //     }
-        // }
-
-        for (var i=0; i<image.keys.length; i++){
-            if (image.ref[image.keys[i]].textureUnit !== undefined) {
-                gl.activeTexture(image.ref[image.keys[i]].textureUnit);
-                gl.bindTexture(gl.TEXTURE_2D, image.ref[image.keys[i]].texture);
-            }
-        }
-
-//image.ref['clear'].texture 
+        // gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+        // gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        // gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
         // gl.uniform2f(mouseLocation, g.mouse.x, g.mouse.y);
         // if (g.frame.count === 0){
@@ -276,70 +230,13 @@ function render() {
 
         //gl.uniform2f(cameraLocation, g.mouse.x, g.mouse.y);
 
-        //gl.bindBuffer(gl.ARRAY_BUFFER, texture);
-        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 
-
-
-        // frameBuffer = gl.createFramebuffer();
-        // gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
-        // frameBuffer.width = 640;
-        // frameBuffer.height = 360;
-
-        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, frameBuffer.width, frameBuffer.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-        //gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, frameBuffer.width, frameBuffer.height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
-
-        //gl.viewport(0, 0, canvas.width, canvas.height);
-
-        //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['clear'].texture, 0);
-        //gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['clear'].texture, 0,1);
-
-        // Render to the texture (using clear because it's simple)
-
-        //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, image.ref['atlas'].texture, 0);
-        //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['clear'].texture, 0);
-        //gl.clearColor(1, 1, 1, 1); // green;
-        //gl.clear(gl.COLOR_BUFFER_BIT);
-
-// gl.framebufferTexture2D( 
-//     gl.FRAMEBUFFER,
-//     gl.DEPTH_ATTACHMENT, 
-//     gl.TEXTURE_2D, 
-//     this.m_depthComponentTexture, 
-//     0 );
-
+        for (var i=0; i<image.arr.length; i++){
+            gl.activeTexture(gl.TEXTURE0 + i);
+            gl.bindTexture(gl.TEXTURE_2D, image.arr[i].texture);
+        }
 
         gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-
-// // Set the backbuffer's alpha to 1.0
-// gl.clearColor(1, 1, 1, 1);
-// gl.colorMask(false, false, false, true);
-// gl.clear(gl.COLOR_BUFFER_BIT);
-
-        // for (var i=0; i<image.keys.length; i++){
-        //     if (image.ref[image.keys[i]].textureUnit !== undefined) {
-        //         gl.activeTexture(image.ref[image.keys[i]].textureUnit);
-        //         gl.bindTexture(gl.TEXTURE_2D, image.ref[image.keys[i]].texture);
-        //     }
-        // }
-
-
-        //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['atlas'].texture, 0);
-
-        //gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, image.ref['edit'].texture, 0);
-
-        // // Set the backbuffer's alpha to 1.0
-        // gl.clearColor(1, 1, 1, 1);
-        // gl.colorMask(false, false, false, true);
-        // gl.clear(gl.COLOR_BUFFER_BIT);
-
-
-        // // Set the backbuffer's alpha to 1.0
-        // gl.clearColor(1, 1, 1, 1);
-        // gl.colorMask(false, false, false, true);
-        // gl.clear(gl.COLOR_BUFFER_BIT);
-
 
         // -----------------------------------------------------------------
     } // for loop, repeat

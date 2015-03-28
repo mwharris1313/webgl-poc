@@ -85,7 +85,17 @@ vec4 layerTransform(sampler2D layer, vec2 tCoord, vec2 layerWH, int tileNumber){
     index = getTileIndex(tileNumber);
     scale = vec2(screen.x / layerWH.x, screen.y / layerWH.y);
     offset = vec2(index.x*tileWH.x/layerWH.x, index.y*tileWH.y/layerWH.y);
-    return texture2D( layer, vec2(offset.x + texCoord.x*scale.x, offset.y + texCoord.y*scale.y) );
+    return texture2D( layer, vec2(offset.x + tCoord.x*scale.x, offset.y + tCoord.y*scale.y) );
+}
+
+vec2 getLayerTransformXY(sampler2D layer, vec2 tCoord, vec2 layerWH, int tileNumber){
+
+    vec2  tileWH, index, scale, offset;
+    tileWH = vec2(32.0, 32.0);
+    index = getTileIndex(tileNumber);
+    scale = vec2(screen.x / layerWH.x, screen.y / layerWH.y);
+    offset = vec2(index.x*tileWH.x/layerWH.x, index.y*tileWH.y/layerWH.y);
+    return vec2(offset.x + tCoord.x*scale.x, offset.y + tCoord.y*scale.y);
 }
 
 // ###########################################################################################
@@ -113,9 +123,14 @@ void main() {
 
     vec4 color;
     //if(layer7Color.x == 1.0){
-    if(layer7Color.x == 1.0){
-        //color = layer7Color;
-        //color = layer7Color;
+    if(layer7Color.w != 0.0){
+        //vec2 index = getTileIndex(int(layer7Color.x));
+        //vec4 tColor = layerTransform(layer6, vec2(index.x+mod(texCoord.x,32.0),index.y+mod(texCoord.y,32.0,255)), layer6WH,0);
+        //vec4 tColor = layerTransform(layer6, vec2(index.x,index.y), layer6WH, int(layer7Color.x));
+        //vec2 tXY = getLayerTransformXY(layer6, vec2(texCoord.x,texCoord.y), layer6WH, int(layer7Color.x));
+        //vec4 tColor = layerTransform(layer6, vec2(mod(256.0*texCoord.x,16.0)/256.0,mod(256.0*texCoord.y,16.0)/256.0), layer6WH, int(layer7Color.x));
+        //vec4 tColor = layerTransform(layer6, vec2(index.x/512.0+mod(512.0*texCoord.x,32.0)/512.0,mod(512.0*texCoord.y,32.0)/512.0), layer6WH, int(3));
+        //vec4 tColor = layerTransform(layer6, vec2(index.x/512.0+mod(512.0*texCoord.x,32.0)/512.0,mod(512.0*texCoord.y,32.0)/512.0), layer6WH, int(3));
 
         if (isBlend) {
 
@@ -139,8 +154,8 @@ void main() {
 
             // } else if (layer7Color.xyz != vec3(0,0,0)) {
             //     color = layer7Color;
-            } else if (layer6Color.xyz != vec3(0,0,0)) {
-                color = layer6Color;
+            // } else if (layer6Color.xyz != vec3(0,0,0)) {
+            //     color = layer6Color;
             // } else if (layer5Color.xyz != vec3(0,0,0)) {
             //     color = layer5Color;
             } else if (layer4Color.xyz != vec3(0,0,0)) {
@@ -153,13 +168,34 @@ void main() {
                 color = layer1Color;
             } else if (layer0Color.xyz != vec3(0,0,0)) {
                 color = layer0Color;
-
             } else {
-                color = vec4(0.2,0.2,0.2,1);        
+                color = vec4(0.2,0.2,0.2,1);
             }
 
         }
 
+        int tile = int(layer7Color.x) * 255;
+        vec2 index = getTileIndex(int(layer7Color.x));
+        //vec4 tColor = layerTransform(layer6, vec2(index.x+mod(texCoord.x,32.0),index.y+mod(texCoord.y,32.0,255)), layer6WH,0);
+        //vec4 tColor = layerTransform(layer6, vec2(index.x,index.y), layer6WH, int(layer7Color.x));
+        //vec2 tXY = getLayerTransformXY(layer6, vec2(texCoord.x,texCoord.y), layer6WH, int(layer7Color.x));
+        //vec4 tColor = layerTransform(layer6, vec2(mod(256.0*texCoord.x,16.0)/256.0,mod(256.0*texCoord.y,16.0)/256.0), layer6WH, int(layer7Color.x));
+        //vec4 tColor = layerTransform(layer6, vec2(index.x/512.0+mod(512.0*texCoord.x,32.0)/512.0,mod(512.0*texCoord.y,32.0)/512.0), layer6WH, int(3));
+        //vec4 tColor = layerTransform(layer6, vec2(index.x/512.0+mod(512.0*texCoord.x,32.0)/512.0,mod(512.0*texCoord.y,32.0)/512.0), layer6WH, int(3));
+
+        // color = layerTransform(layer6, texCoord, layer6WH, tile);
+        float x, y;
+        x = texCoord.x ;
+        y = texCoord.y ;
+        color = layerTransform(layer6, vec2(x,y), layer6WH, int(16.0 * index.y + index.x));
+
+
+
+
+        //float tc = 0.0093;
+        //tColor = layerTransform(layer6, vec2(texCoord,tc) , layer6WH, int(0));
+        // color = texture2D( layer6, texCoord);
+        // color = layer7Color;
 
     } else {
         color = vec4(0,0,0,0);

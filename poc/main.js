@@ -238,6 +238,15 @@ function render() {
 
         gl.drawArrays(gl.TRIANGLES, 0, 6);
 
+        
+
+    var buf = new Uint8Array(gl.canvas.width * gl.canvas.height * 4);
+    gl.readPixels(0, 0, gl.canvas.width, gl.canvas.height, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+
+    i = 0;
+    console.log('PIXEL:', i, 'RGBA vec3 Inspect', buf[4*i+0],buf[4*i+1],buf[4*i+2],buf[4*i+3]);
+
+
         // -----------------------------------------------------------------
     } // for loop, repeat
 

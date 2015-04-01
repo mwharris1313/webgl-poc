@@ -100,7 +100,10 @@ vec2 getLayerTransformXY(sampler2D layer, vec2 tCoord, vec2 layerWH, int tileNum
 
 // ###########################################################################################
 void main() {
-
+    vec3 v3Inspect = vec3(0,0,0);
+    vec3 v3Test = vec3(0.5,0,1);
+    v3Inspect = v3Test; // set v3Inspect to variable you're interested in inspecting 
+    //vec2 v2Inspect = vec2(0,0);
     // grab tile to render from atlas , would normally originate from a levelTexture
     // for a levelTexture, each pixel value corresponds to a tile in the atlas
     // all the pixels in a levelTexture are the the tiles of the level's tile-map.
@@ -117,6 +120,16 @@ void main() {
     layer5Color = layerTransform(layer5, texCoord, layer5WH,0);
     layer6Color = layerTransform(layer6, texCoord, layer6WH,0);
     layer7Color = layerTransform(layer7, texCoord, layer7WH*32.0,0);
+
+    // Eight texture layers, layers 0-7
+    // 0:R "value", background    usually for terrain ,or background parallax if layer 1 is used for terrain 
+    // 1:G underlay      usually for terrain
+    // 2:B foreground    usually for players and mobs or active objects are drawn
+    // 3:A overlay       usually for translucent clouds drawn (when in overhead perspective)
+    // 4: 
+    // 5: tile atlas B  can be used for player/mob animations/spritesheets or dynamic tiles
+    // 6: tile atlas A  can be used for terrain and static tiles
+    // 7: tile map level (256px x 256px), RBGA pixel stores 4 layers, 1 tile per byte (256 tiles in a tile atlas)
 
     // -------------------------------------------------------------------------
     bool isBlend = false;
@@ -189,9 +202,6 @@ void main() {
         y = texCoord.y ;
         color = layerTransform(layer6, vec2(x,y), layer6WH, int(16.0 * index.y + index.x));
 
-
-
-
         //float tc = 0.0093;
         //tColor = layerTransform(layer6, vec2(texCoord,tc) , layer6WH, int(0));
         // color = texture2D( layer6, texCoord);
@@ -201,11 +211,33 @@ void main() {
         color = vec4(0,0,0,0);
     }
 
-
+    if ( floor(texCoord.x * 640.0) == 0.0 && floor(texCoord.y * 360.0) == 359.0){
+        color = vec4(vec3(v3Inspect),0);
+    } else {
+        //color = vec4(1,1,1,1);
+        color = vec4(0,1,1,1);
+    }
 
     // -------------------------------------------------------------------------
-    gl_FragColor =  color;
+    //gl_FragColor =  color;
+
+    // vec2 fc = gl_FragCoord;
+    // if (fc.x == 0 && fc.y == 0){
+    //     gl_FragColor = vec4(1,0,1,0);
+    // } else if (fc.x == 1 && fc.y == 0){
+    //     gl_FragColor = vec4(1,0,1,0);
+    // } else {
+    //    //gl_FragColor = vec4(gl_FragCoord.x,0,0,0);
+    //     gl_FragColor = vec4(1,1,1,1);
+    // }
+
+    // if (texCoord.x == 0 && texCoord.y == 0){
+    //     color = vec4(0,0,0,0);
+    // } else {
+    //     color = vec4(1,1,1,0);
+    // }
     // -------------------------------------------------------------------------
+    gl_FragColor = color;
 
 
 }
